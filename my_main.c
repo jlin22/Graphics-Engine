@@ -152,11 +152,9 @@ void first_pass() {
   vary_node corresponding to the given knob with the
   appropirate value.
   ====================*/
-struct vary_node ** second_pass() {
-
-     
+struct vary_node ** second_pass() {  
   double d = 0;
-  struct vary_node** knobs;
+  struct vary_node** knobs = (struct vary_node **)calloc(sizeof(struct vary_node *), num_frames);
   for (int i = 0; i < num_frames; ++i)
     knobs[i] = NULL;
   for (int i = 0; i < lastop; ++i)
@@ -175,17 +173,17 @@ struct vary_node ** second_pass() {
 	      new_node->next = NULL;
 	      if (knobs[j] == NULL)
 		knobs[j] = new_node;
-	      //segmentation fault code
 	      else
 		{
-		  while (knobs[j]->next != NULL)
+		  //find the end
+		  while (current_node->next != NULL)
 		    current_node = current_node->next;
 		  current_node->next = new_node;
+		  }
 		}
-	      
-	    }
 	}
-    }
+	}  
+ 
   /*for (int i = 0; i < num_frames; ++i)
     while(knobs[i] != NULL){
       printf("%d : %s\n", i, knobs[i]->name);
@@ -202,7 +200,7 @@ Goes through symtab and display all the knobs and their
 currnt values
 ====================*/
 void print_knobs() {
-  /*  int i;
+  int i;
 
   printf( "ID\tNAME\t\tTYPE\t\tVALUE\n" );
   for ( i=0; i < lastsym; i++ ) {
@@ -213,7 +211,7 @@ void print_knobs() {
       printf( "SYM_VALUE\t");
       printf( "%6.2f\n", symtab[i].s.value);
     }
-    }*/
+    }
 }
 
 
@@ -325,50 +323,15 @@ void my_main() {
   clear_screen( t );
   clear_zbuffer(zb);
   first_pass();
-  //second pass code
-  
-  double d = 0;
-  struct vary_node* knobs[num_frames];
-  for (int i = 0; i < num_frames; ++i)
-    knobs[i] = NULL;
-  for (int i = 0; i < lastop; ++i)
-    {
-      switch (op[i].opcode)
-	{
-	case VARY:
-	  d = (op[i].op.vary.end_val - op[i].op.vary.start_val) / (op[i].op.vary.end_frame - op[i].op.vary.start_frame);
-	  for (int j = op[i].op.vary.start_frame; j <= op[i].op.vary.end_frame; ++j)
-	    {//j is the frame, i is the index for operators
-	      struct vary_node* current_node = knobs[j];
-	      //new_node to add to knobs
-	      struct vary_node* new_node = (struct vary_node*)malloc(sizeof(struct vary_node));
-	      strcpy(new_node->name, op[i].op.vary.p->name);
-	      new_node->value = op[i].op.vary.start_val + d * (j - op[i].op.vary.start_frame);
-	      new_node->next = NULL;
-	      if (knobs[j] == NULL)
-		knobs[j] = new_node;
-	      //segmentation fault code
-	      else
-		{
-		  //find the end
-		  while (current_node->next != NULL)
-		    current_node = current_node->next;
-		  current_node->next = new_node;
-		  }
-		}
-	}
-	}  
-
-  //testing second_pass()
-  /*
-  for (int j = 0; j < num_frames; ++j)
+  struct vary_node ** knobs = second_pass();
+  //testing second_pass
+  /*for (int j = 0; j < num_frames; ++j)
     while (knobs[j] != NULL){
       printf("%d : %s : %0.3f\n", j, knobs[j]->name, knobs[j]->value);
       knobs[j] = knobs[j]->next;
       }*/
 
   //creating directory
-  
   struct stat st = {0};
   char* dir = "anim";
   if (stat(dir, &st) == -1)
@@ -476,21 +439,17 @@ void my_main() {
         draw_lines(tmp, t, zb, g);
         tmp->lastcol = 0;
         break;
-
 	//knobs
-	
       case MOVE:
         xval = op[i].op.move.d[0];
         yval = op[i].op.move.d[1];
         zval = op[i].op.move.d[2];
-        
         if (op[i].op.move.p != NULL)
           {
 	    con = get_value(knobs[f], op[i].op.move.p->name);
 	    xval *= con;
 	    yval *= con;
 	    zval *= con;
-            
             //printf("\tknob: %s",op[i].op.move.p->name);
           }
 	//printf("Move: %6.2f %6.2f %6.2f", xval, yval, zval);
@@ -500,7 +459,6 @@ void my_main() {
         tmp->lastcol = 0;
         break;
       case SCALE:
-
 	xval = op[i].op.scale.d[0];
         yval = op[i].op.scale.d[1];
         zval = op[i].op.scale.d[2];
@@ -511,11 +469,8 @@ void my_main() {
 	    yval *= con;
 	    zval *= con;
             //printf("\tknob: %s",op[i].op.scale.p->name);
-	    
           }
-	//test
 	//printf("Scale: %6.2f %6.2f %6.2f",xval, yval, zval);
-        
         tmp = make_scale( xval, yval, zval );
         matrix_mult(peek(systems), tmp);
         copy_matrix(tmp, peek(systems));
@@ -532,7 +487,6 @@ void my_main() {
             //printf("\tknob: %s",op[i].op.rotate.p->name);
           }
 	//printf("Rotate: axis: %6.2f degrees: %6.2f", xval, theta);
-        
         theta*= (M_PI / 180);
         if (op[i].op.rotate.axis == 0 )
           tmp = make_rotX( theta );
@@ -540,7 +494,6 @@ void my_main() {
           tmp = make_rotY( theta );
         else
           tmp = make_rotZ( theta );
-
         matrix_mult(peek(systems), tmp);
         copy_matrix(tmp, peek(systems));
         tmp->lastcol = 0;
@@ -565,24 +518,12 @@ void my_main() {
     printf("\n");
   }//end operation loop
   //creating the frames
-  /*   At the end of each frame iteration
-  save the current screen to a file named the
-  provided basename plus a numeric string such that the
-  files will be listed in order, then clear the screen and
-  reset any other data structures that need it.*/
   
-  
-  if (num_frames != 1)
+  if (num_frames > 1)
     {
       char *fn =(char *)malloc(sizeof(char *));
-      strcpy(fn, "anim/");
-      strcat(fn, name);
-      char* num = (char *)malloc(sizeof(char *));
-      sprintf(num, "%03d", f);
-      strcat(fn, num);
-      free(num);
-      strcat(fn, ".gif");
-      printf("%s\n", fn);
+      sprintf(fn, "anim/%03d.png", f);
+      printf("Creating file: %s\n", fn);
       save_extension(t, fn);
       free(fn);
      
@@ -596,22 +537,10 @@ void my_main() {
       while (knobs[f] != NULL){
 	free(knobs[f]);
 	knobs[f] = knobs[f]->next;
+      }
     }
-     }
   }
   if (num_frames != 1){
-    //make_animation(name);
-    int e, f;
-    char name_arg[128];
-    
-    sprintf(name_arg, "anim/%s*", name);
-    strncat(name, ".gif", 128);
-    printf("Making animation: %s\n", name);
-    f = fork();
-    if (f == 0) {
-      e = execlp("convert", "convert", "-delay", "3", "-loop", "0", name_arg, name, NULL);
-      //printf("e: %d errno: %d: %s\n", e, errno, strerror(errno));
-    }
+    make_animation(name);
   }
-   
 }
