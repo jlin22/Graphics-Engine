@@ -340,7 +340,7 @@ void my_main() {
   for (int f = 0; f < num_frames; ++f){
   for (i=0;i<lastop;i++) {
     //printf("%d: ",i);
-    double con;
+    double con = 1;
     switch (op[i].opcode)
       {
       case SPHERE:
@@ -441,35 +441,29 @@ void my_main() {
         break;
 	//knobs
       case MOVE:
-        xval = op[i].op.move.d[0];
-        yval = op[i].op.move.d[1];
-        zval = op[i].op.move.d[2];
-        if (op[i].op.move.p != NULL)
-          {
+	if (op[i].op.move.p != NULL)
+	{
 	    con = get_value(knobs[f], op[i].op.move.p->name);
-	    xval *= con;
-	    yval *= con;
-	    zval *= con;
             //printf("\tknob: %s",op[i].op.move.p->name);
-          }
-	//printf("Move: %6.2f %6.2f %6.2f", xval, yval, zval);
+	}
+        xval = op[i].op.move.d[0] * con;
+        yval = op[i].op.move.d[1] * con;
+        zval = op[i].op.move.d[2] * con;
+       	//printf("Move: %6.2f %6.2f %6.2f", xval, yval, zval);
         tmp = make_translate( xval, yval, zval );
         matrix_mult(peek(systems), tmp);
         copy_matrix(tmp, peek(systems));
         tmp->lastcol = 0;
         break;
       case SCALE:
-	xval = op[i].op.scale.d[0];
-        yval = op[i].op.scale.d[1];
-        zval = op[i].op.scale.d[2];
-        if (op[i].op.scale.p != NULL)
-          {
+	if (op[i].op.scale.p != NULL)
+	{
 	    con = get_value(knobs[f], op[i].op.scale.p->name);
-	    xval *= con;
-	    yval *= con;
-	    zval *= con;
             //printf("\tknob: %s",op[i].op.scale.p->name);
-          }
+	}
+	xval = op[i].op.scale.d[0] * con;
+        yval = op[i].op.scale.d[1] * con;
+        zval = op[i].op.scale.d[2] * con; 
 	//printf("Scale: %6.2f %6.2f %6.2f",xval, yval, zval);
         tmp = make_scale( xval, yval, zval );
         matrix_mult(peek(systems), tmp);
@@ -477,17 +471,14 @@ void my_main() {
         tmp->lastcol = 0;
         break;
       case ROTATE:
-        xval = op[i].op.rotate.axis;
-        theta = op[i].op.rotate.degrees;
         if (op[i].op.rotate.p != NULL)
           {
 	    con = get_value(knobs[f], op[i].op.rotate.p->name);
-	    xval *= con;
-	    theta *= con;
             //printf("\tknob: %s",op[i].op.rotate.p->name);
           }
-	//printf("Rotate: axis: %6.2f degrees: %6.2f", xval, theta);
-        theta*= (M_PI / 180);
+        xval = op[i].op.rotate.axis * con;
+        theta = op[i].op.rotate.degrees * con * (M_PI / 180);
+ 	//printf("Rotate: axis: %6.2f degrees: %6.2f", xval, theta);
         if (op[i].op.rotate.axis == 0 )
           tmp = make_rotX( theta );
         else if (op[i].op.rotate.axis == 1 )
@@ -522,7 +513,7 @@ void my_main() {
   if (num_frames > 1)
     {
       char *fn =(char *)malloc(sizeof(char *));
-      sprintf(fn, "anim/%03d.png", f);
+      sprintf(fn, "anim/%s%03d.png", name, f);
       printf("Creating file: %s\n", fn);
       save_extension(t, fn);
       free(fn);
