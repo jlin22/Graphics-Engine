@@ -332,14 +332,13 @@ void my_main() {
       }*/
 
   //creating directory
+  
   struct stat st = {0};
   char* dir = "anim";
   if (stat(dir, &st) == -1)
     mkdir(dir, 0770);
-  
   for (int f = 0; f < num_frames; ++f){
   for (i=0;i<lastop;i++) {
-    //printf("%d: ",i);
     double con = 1;
     switch (op[i].opcode)
       {
@@ -506,7 +505,6 @@ void my_main() {
         display(t);
         break;
       } //end opcode switch
-    printf("\n");
   }//end operation loop
   //creating the frames
   
