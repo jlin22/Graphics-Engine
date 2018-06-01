@@ -1,40 +1,3 @@
-/*========== my_main.c ==========
-basename giant
-frames 100
-//spinny thing
-push
-//knob
-move 250 250 0  
-rotate x -360 round
-sphere 0 -40 0 15
-scale 0.2 1 0.1
-sphere 60 -30 0 30
-sphere -60 -30 0 30
-scale 5 1 10
-scale 0.5 1 0.5
-sphere 0 -90 0 45
-scale 2 1 2
-scale 0.17 1 0.25
-sphere -50 -150 0 60
-sphere 50 -150 0 60
-scale 5.88 1 4
-pop
-//end of spinny thing
-//static bar
-//could consider making a cylinder
-//make a cylinder if you have couple minutes to wait for it to compile
-push
-box 150 250 0 10 250 10
-box 340 250 0 10 250 10
-box 150 250 0 200 10 10 
-//end of static bar
-//animate
-vary round 0 99 0 1
-
-
-
-
-
   This is the only file you need to modify in order
   to get a working mdl project (for now).
 
@@ -346,17 +309,17 @@ void my_main() {
       case LIGHT://test this later 
 	 //print_symtab(op[i].op.light.p->s.l); 
 	 //NEED TO FIND THE INDEX FOR THE SYMBOLTABLE[p]
-	 printf("%f", op[i].op.light.p[lastsym].s.l->l[0]);
- 	 light[LOCATION][0] = op[i].op.light.p[i].s.l->l[0]; 
+	 printf("%f", op[i].op.light.p->s.l->l[0]);
+ 	 /*light[LOCATION][0] = op[i].op.light.p[i].s.l->l[0]; 
 	 light[LOCATION][1] = op[i].op.light.p[i].s.l->l[1]; 
 	 light[LOCATION][2] = op[i].op.light.p[i].s.l->l[2]; 
 	 light[COLOR][RED] = op[i].op.light.p[i].s.l->c[0]; 
 	 light[COLOR][GREEN] = op[i].op.light.p[i].s.l->c[1];
-	 light[COLOR][BLUE] = op[i].op.light.p[i].s.l->c[2];
+	 light[COLOR][BLUE] = op[i].op.light.p[i].s.l->c[2];*/
 	break;
       case CONSTANTS://test this later
 	//print_symtab(op[i].op.constants.p->s.c);
-	areflect[RED] = op[i].op.constants.p[i].s.c->r[0];  
+	/*areflect[RED] = op[i].op.constants.p[i].s.c->r[0];  
 	areflect[GREEN] = op[i].op.constants.p[i].s.c->g[0];  
 	areflect[BLUE] = op[i].op.constants.p[i].s.c->b[0];  
 
@@ -366,7 +329,7 @@ void my_main() {
 
 	sreflect[RED] = op[i].op.constants.p[i].s.c->r[2]; 
 	sreflect[GREEN] = op[i].op.constants.p[i].s.c->g[2]; 
-	sreflect[BLUE] = op[i].op.constants.p[i].s.c->b[2]; 
+	sreflect[BLUE] = op[i].op.constants.p[i].s.c->b[2];*/ 
 	break;      
       case SPHERE:
         /* printf("Sphere: %6.2f %6.2f %6.2f r=%6.2f", */
