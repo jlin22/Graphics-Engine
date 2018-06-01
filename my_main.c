@@ -1,4 +1,4 @@
-  This is the only file you need to modify in order
+/*  This is the only file you need to modify in order
   to get a working mdl project (for now).
 
   my_main.c will serve as the interpreter for mdl.
@@ -300,36 +300,32 @@ void my_main() {
     double con = 1;
     switch (op[i].opcode)
       {
-      case AMBIENT://test this later
-  	ambient.red = op[i].op.ambient.c[0];
+      case AMBIENT:
+	ambient.red = op[i].op.ambient.c[0];
 	ambient.green = op[i].op.ambient.c[1];
         ambient.blue = op[i].op.ambient.c[2];
 	//printf("ambient: red: %d green: %d blue: %d", ambient.red, ambient.green, ambient.blue);
 	break;
-      case LIGHT://test this later 
-	 //print_symtab(op[i].op.light.p->s.l); 
-	 //NEED TO FIND THE INDEX FOR THE SYMBOLTABLE[p]
-	 printf("%f", op[i].op.light.p->s.l->l[0]);
- 	 /*light[LOCATION][0] = op[i].op.light.p[i].s.l->l[0]; 
-	 light[LOCATION][1] = op[i].op.light.p[i].s.l->l[1]; 
-	 light[LOCATION][2] = op[i].op.light.p[i].s.l->l[2]; 
-	 light[COLOR][RED] = op[i].op.light.p[i].s.l->c[0]; 
-	 light[COLOR][GREEN] = op[i].op.light.p[i].s.l->c[1];
-	 light[COLOR][BLUE] = op[i].op.light.p[i].s.l->c[2];*/
+      case LIGHT:
+	light[COLOR][RED] = op[i].op.light.c[0];
+	light[COLOR][GREEN] = op[i].op.light.c[1];
+	light[COLOR][BLUE] = op[i].op.light.c[2];
+	light[LOCATION][0] = op[i].op.light.p->s.l->l[0];
+	light[LOCATION][1] = op[i].op.light.p->s.l->l[1];
+	light[LOCATION][2] = op[i].op.light.p->s.l->l[2];
 	break;
-      case CONSTANTS://test this later
-	//print_symtab(op[i].op.constants.p->s.c);
-	/*areflect[RED] = op[i].op.constants.p[i].s.c->r[0];  
-	areflect[GREEN] = op[i].op.constants.p[i].s.c->g[0];  
-	areflect[BLUE] = op[i].op.constants.p[i].s.c->b[0];  
+      case CONSTANTS:
+	areflect[RED] = op[i].op.constants.p->s.c->r[0];
+	areflect[GREEN] = op[i].op.constants.p->s.c->g[0];  
+	areflect[BLUE] = op[i].op.constants.p->s.c->b[0];  
 
-	dreflect[RED] = op[i].op.constants.p[i].s.c->r[1];  
- 	dreflect[GREEN] = op[i].op.constants.p[i].s.c->g[1]; 
-	dreflect[BLUE] = op[i].op.constants.p[i].s.c->b[1]; 
+	dreflect[RED] = op[i].op.constants.p->s.c->r[1];  
+ 	dreflect[GREEN] = op[i].op.constants.p->s.c->g[1]; 
+	dreflect[BLUE] = op[i].op.constants.p->s.c->b[1]; 
 
-	sreflect[RED] = op[i].op.constants.p[i].s.c->r[2]; 
-	sreflect[GREEN] = op[i].op.constants.p[i].s.c->g[2]; 
-	sreflect[BLUE] = op[i].op.constants.p[i].s.c->b[2];*/ 
+	sreflect[RED] = op[i].op.constants.p->s.c->r[2]; 
+	sreflect[GREEN] = op[i].op.constants.p->s.c->g[2]; 
+	sreflect[BLUE] = op[i].op.constants.p->s.c->b[2];
 	break;      
       case SPHERE:
         /* printf("Sphere: %6.2f %6.2f %6.2f r=%6.2f", */
