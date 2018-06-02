@@ -1,8 +1,14 @@
 #ifndef DRAW_H
-#define DRAW_H
-
+#include "uthash.h"
 #include "matrix.h"
 #include "ml6.h"
+
+struct vertex_normal{
+    char *vert;
+	double norm;
+    UT_hash_handle hh;
+
+};
 
 void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color c );
 
@@ -14,7 +20,9 @@ void add_polygons( struct matrix * points,
 void draw_polygons( struct matrix * points, screen s, zbuffer zb,
                     double *view, double light[2][3], color ambient,
                     double *areflect, double *dreflect, double *sreflect);
-
+void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
+		  double *view, double light[2][3], color ambient,
+		  double *areflect, double *dreflect, double *sreflect);
 //3d shapes
 void add_box( struct matrix * edges,
               double x, double y, double z,

@@ -299,14 +299,16 @@ void my_main() {
   for (i=0;i<lastop;i++) {
     double con = 1;
     switch (op[i].opcode)
-      {
-      case AMBIENT:
+	{
+	case SHADING:
+	break;	
+	case AMBIENT:
 	ambient.red = op[i].op.ambient.c[0];
 	ambient.green = op[i].op.ambient.c[1];
         ambient.blue = op[i].op.ambient.c[2];
 	//printf("ambient: red: %d green: %d blue: %d", ambient.red, ambient.green, ambient.blue);
 	break;
-      case LIGHT:
+	case LIGHT:
 	light[COLOR][RED] = op[i].op.light.c[0];
 	light[COLOR][GREEN] = op[i].op.light.c[1];
 	light[COLOR][BLUE] = op[i].op.light.c[2];
@@ -347,6 +349,10 @@ void my_main() {
         matrix_mult( peek(systems), tmp );
         draw_polygons(tmp, t, zb, view, light, ambient,
                       areflect, dreflect, sreflect);
+		draw_gouraud(tmp, t, zb, view, light, ambient,
+					 areflect, dreflect, sreflect);
+		draw_gouraud(tmp, t, zb, view, light, ambient,
+					 areflect, dreflect, sreflect);
         tmp->lastcol = 0;
         break;
       case TORUS:

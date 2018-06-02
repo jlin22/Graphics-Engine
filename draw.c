@@ -193,6 +193,43 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb,
     }
   }
 }
+//draw_gouraud- draw polygons using gouraud shading
+/*
+STEPS
+1- Create a dictionary of vertex:normals 
+2- Compute I for each vertex of the polygon
+3- Use scanline conversion to calculate color for each pixel 
+*/
+void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
+		  double *view, double light[2][3], color ambient,
+		  double *areflect, double *dreflect, double *sreflect)
+{
+//create a mapping(array of hashable values) 
+	struct vertex_normal *vn = NULL; //the hash table
+	int point;
+	for (point=0; point < points->lastcol-2; point+=3) {
+	//find vertex from the inputs	
+		char * vertex = (char *)malloc(sizeof(char *));
+		for (int i=0; i<3;++i)
+			sprintf(vertex , "%.3f", points->m[i][point]);
+		struct vertex_normal *v;	
+		HASH_FIND_PTR(vn, &vertex, v); 
+		if (v==NULL)
+		{
+			v = (struct vertex_normal *)malloc(sizeof(struct vertex_normal *));
+			v->vert = vertex;
+			v->norm = 0.0;//calculate value
+			char *vertex;
+		}
+		else
+		{
+			//HASH_ADD_PTR(vn, &vertex, HASH_REPLACE_PTR(vn, &vertex, v);
+		}
+	}	
+	//end of calculating dictionary values
+	//start of 
+}
+
 
 /*======== void add_box() ==========
   Inputs:   struct matrix * edges
