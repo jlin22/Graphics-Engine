@@ -5,8 +5,8 @@
 
 struct vertex_normal{
     char vert[22];
-	double norm;
-	double i;
+	double *norm;
+	color c;
     UT_hash_handle hh;
 
 };

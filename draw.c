@@ -209,6 +209,7 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 	int point;
 	for (point=0; point < points->lastcol; ++point) {
 	//find vertex from the inputs	
+		int p = point % 3;
 		char * vertex = (char *)malloc(sizeof(char *));
 		strcpy(vertex, "");
 		char *tmp = (char *)malloc(sizeof(char *));
@@ -224,22 +225,112 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 		{
 			v = (struct vertex_normal *)malloc(sizeof(struct vertex_normal ));
 			strcpy(v->vert, vertex);
-			v->i = 0.0;
-			v->norm = 0.0;
-			//hashkeyptr issue
+		    v->norm =calculate_normal(points, point - p );
 			HASH_ADD_STR(vn, vert, v);
 		}
 		else
 		{
-			v->norm += 1.0;			
-			//change the norm value
-			
+			for (int i=0;i<3;++i)
+				v->norm[i] += (calculate_normal(points, point - p))[i];
 		}
 	}
 	//end of calculating dictionary values
 	//start of calculating I values
- 
+	struct vertex_normal *v;
+	for (v=vn; v!=NULL; v=v->hh.next){
+		//get lighting
+		v->c = get_lighting(v->norm, view, ambient, light, areflect, dreflect, sreflect);
+	}
+	//drawing!
+
+//void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color c) {
+//i is points
+
+	for (point=0; point < points->lastcol-2; point+=3) {
+	//normal not defined, need to find normal from the dictionary
+		if ( dot_product(normal, view) > 0 ) {
+	int i = point;
+	int top, mid, bot, y;
+  int distance0, distance1, distance2;
+  double x0, x1, y0, y1, y2, dx0, dx1, z0, z1, dz0, dz1;
+  int flip = 0;
+
+  z0 = z1 = dz0 = dz1 = 0;
+
+  y0 = points->m[1][i];
+  y1 = points->m[1][i+1];
+  y2 = points->m[1][i+2];
+
+//find bot and top
+  if ( y0 <= y1 && y0 <= y2) {
+    bot = i;
+    if (y1 <= y2) {
+      mid = i+1;
+      top = i+2;
+    }
+    else {
+      mid = i+2;
+      top = i+1;
+    }
+  }//end y0 bottom
+  else if (y1 <= y0 && y1 <= y2) {
+    bot = i+1;
+    if (y0 <= y2) {
+      mid = i;
+      top = i+2;
+    }
+    else {
+      mid = i+2;
+      top = i;
+    }
+  }//end y1 bottom
+  else {
+    bot = i+2;
+    if (y0 <= y1) {
+      mid = i;
+      top = i+1;
+    }
+    else {
+      mid = i+1;
+      top = i;
+    }
 }
+  x0 = points->m[0][bot];
+  x1 = points->m[0][bot];
+  z0 = points->m[2][bot];
+  z1 = points->m[2][bot];
+  y = (int)(points->m[1][bot]);
+
+  distance0 = (int)(points->m[1][top]) - y;
+  distance1 = (int)(points->m[1][mid]) - y;
+  distance2 = (int)(points->m[1][top]) - (int)(points->m[1][mid]);
+
+  dx0 = distance0 > 0 ? (points->m[0][top]-points->m[0][bot])/distance0 : 0;
+  dx1 = distance1 > 0 ? (points->m[0][mid]-points->m[0][bot])/distance1 : 0;
+  dz0 = distance0 > 0 ? (points->m[2][top]-points->m[2][bot])/distance0 : 0;
+  dz1 = distance1 > 0 ? (points->m[2][mid]-points->m[2][bot])/distance1 : 0;
+
+  while ( y <= (int)points->m[1][top] ) {
+	//c not defined, need to find intensity from the vertex and also calculate it
+    draw_line(x0, y, z0, x1, y, z1, s, zb, c);
+
+    x0+= dx0;
+    x1+= dx1;
+    z0+= dz0;
+    z1+= dz1;
+    y++;
+
+    if ( !flip && y >= (int)(points->m[1][mid]) ) {
+      flip = 1;
+      dx1 = distance2 > 0 ? (points->m[0][top]-points->m[0][mid])/distance2 : 0;
+      dz1 = distance2 > 0 ? (points->m[2][top]-points->m[2][mid])/distance2 : 0;
+      x1 = points->m[0][mid];
+      z1 = points->m[2][mid];
+    } 
+  }
+}
+		}
+	}
 
 
 /*======== void add_box() ==========
