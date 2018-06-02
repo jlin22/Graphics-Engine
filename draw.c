@@ -207,21 +207,22 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 //create a mapping(array of hashable values) 
 	struct vertex_normal *vn = NULL; //the hash table
 	int point;
-	for (point=0; point < points->lastcol-2; point+=3) {
+	for (point=0; point < points->lastcol; ++point) {
 	//find vertex from the inputs	
 		char * vertex = (char *)malloc(sizeof(char *));
 		strcpy(vertex, "");
-		char tmp[7];
+		char *tmp = (char *)malloc(sizeof(char *));
 		for (int i=0; i<3;++i)
 		{	
 			sprintf(tmp, "%4.3f", points->m[i][point]);
 			strcat(vertex, tmp);
 		}
+		free(tmp);
 		struct vertex_normal *v;	
 		HASH_FIND_STR(vn, vertex, v); 
 		if (v==NULL)
 		{
-			v = (struct vertex_normal *)malloc(sizeof(struct vertex_normal *));
+			v = (struct vertex_normal *)malloc(sizeof(struct vertex_normal ));
 			strcpy(v->vert, vertex);
 			v->i = 0.0;
 			v->norm = 0.0;
@@ -232,6 +233,7 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 		{
 			v->norm += 1.0;			
 			//change the norm value
+			
 		}
 	}
 	//end of calculating dictionary values
