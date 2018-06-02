@@ -226,7 +226,6 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 			v->i = 0.0;
 			v->norm = 0.0;
 			//hashkeyptr issue
-			
 			HASH_ADD_STR(vn, vert, v);
 		}
 		else
