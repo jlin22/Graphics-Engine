@@ -210,24 +210,34 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 	for (point=0; point < points->lastcol-2; point+=3) {
 	//find vertex from the inputs	
 		char * vertex = (char *)malloc(sizeof(char *));
+		strcpy(vertex, "");
+		char tmp[7];
 		for (int i=0; i<3;++i)
-			sprintf(vertex , "%.3f", points->m[i][point]);
+		{	
+			sprintf(tmp, "%4.3f", points->m[i][point]);
+			strcat(vertex, tmp);
+		}
 		struct vertex_normal *v;	
-		HASH_FIND_PTR(vn, &vertex, v); 
+		HASH_FIND_STR(vn, vertex, v); 
 		if (v==NULL)
 		{
 			v = (struct vertex_normal *)malloc(sizeof(struct vertex_normal *));
-			v->vert = vertex;
-			v->norm = 0.0;//calculate value
-			char *vertex;
+			strcpy(v->vert, vertex);
+			v->i = 0.0;
+			v->norm = 0.0;
+			//hashkeyptr issue
+			
+			HASH_ADD_STR(vn, vert, v);
 		}
 		else
 		{
-			//HASH_ADD_PTR(vn, &vertex, HASH_REPLACE_PTR(vn, &vertex, v);
+			v->norm += 1.0;			
+			//change the norm value
 		}
-	}	
+	}
 	//end of calculating dictionary values
-	//start of 
+	//start of calculating I values
+ 
 }
 
 
