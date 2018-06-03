@@ -233,7 +233,52 @@ void modify(struct vertex_normal **mod, struct matrix ** mat, int index)
 		v->norm[i] += (calculate_normal(points, index))[i];
 	}		
 }
-
+void find_positions(double y[], int pos[], int i )
+{//y[i] = y(i), pos[0] = bot, pos[2] = top
+	if (y[0] < y[1] && y[0] <= y[2]){
+		pos[0] = i;
+		if (y[1] <= y[2]){
+			pos[1] = i+1;
+			pos[2] = i+2;
+		}
+		else{
+			pos[1] = i+2;
+			pos[2] = i+1;
+		}
+	}
+	else if (y[1] <= y[0] && y[1] <= y[2]){
+		pos[0] = i+1;
+		if (y[0] <= y[2]) {
+			pos[1] = i;
+		    pos[2] = i+2;
+		}
+		else {
+			pos[1] = i+2;
+			pos[2] = i;
+		}
+	}
+	else {
+		pos[0] = i+2;
+		if (y0 <= y1) {
+			pos[1] = i;
+			pos[2] = i+1;
+		}
+	    else {
+			pos[1] = i+1;
+			pos[2] = i;
+		}
+	}
+}
+void find_distances(double distance[], struct matrix **mat, int pos[], int y)
+{
+	struct matrix *points = *mat;
+	distance[0] = (int)(points->m[1][pos[2]]) - y;
+	distance[1] = (int)(points->m[1][pos[1]]) - y;
+	distance[2] = (int)(points->m[1][pos[2]]) - (int)(points->m[1][pos[1]]);
+}
+void find_deltas()
+{
+}
 /* HELPER FUNCTIONS END */
 void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 		  double *view, double light[2][3], color ambient,
@@ -257,68 +302,24 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 	for (int point = 0; point < points->lastcol-2; point+=3){
 		double *normal = calculate_normal(points, point);
 		if ( dot_product(normal, view) > 0 ) {
+			double y[3] = {points->m[1][point],points->m[1][point+1],points->m[1][point+2]};
+			int pos[3] = {};
+			find_positions(y, pos, point); 
+			double x0, x1, z0, z1;
+			double dx0, dx1, dz0, dz1;
+		    x0 = points->m[0][pos[0]], x1 = points->m[0][pos[0]];
+            z0 = points->m[2][pos[0]], z1 = points->m[2][pos[0]];
+			int yindex = (int)(points->m[1][pos[0]]);
+			double distance[3] = {};
+			find_distances(distance, &points, pos, yindex);
+
 		}
-	//find bot, mid, top
 	}
 //void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color c) {
-//i is points
-/*
-	int i = point;
-	int top, mid, bot, y;
+/*	int top, mid, bot, y;
   int distance0, distance1, distance2;
   double x0, x1, y0, y1, y2, dx0, dx1, z0, z1, dz0, dz1;
   int flip = 0;
-
-  z0 = z1 = dz0 = dz1 = 0;
-
-  y0 = points->m[1][i];
-  y1 = points->m[1][i+1];
-  y2 = points->m[1][i+2];
-
-//find bot and top
-  if ( y0 <= y1 && y0 <= y2) {
-    bot = i;
-    if (y1 <= y2) {
-      mid = i+1;
-      top = i+2;
-    }
-    else {
-      mid = i+2;
-      top = i+1;
-    }
-  }//end y0 bottom
-  else if (y1 <= y0 && y1 <= y2) {
-    bot = i+1;
-    if (y0 <= y2) {
-      mid = i;
-      top = i+2;
-    }
-    else {
-      mid = i+2;
-      top = i;
-    }
-  }//end y1 bottom
-  else {
-    bot = i+2;
-    if (y0 <= y1) {
-      mid = i;
-      top = i+1;
-    }
-    else {
-      mid = i+1;
-      top = i;
-    }
-}
-  x0 = points->m[0][bot];
-  x1 = points->m[0][bot];
-  z0 = points->m[2][bot];
-  z1 = points->m[2][bot];
-  y = (int)(points->m[1][bot]);
-
-  distance0 = (int)(points->m[1][top]) - y;
-  distance1 = (int)(points->m[1][mid]) - y;
-  distance2 = (int)(points->m[1][top]) - (int)(points->m[1][mid]);
-
   dx0 = distance0 > 0 ? (points->m[0][top]-points->m[0][bot])/distance0 : 0;
   dx1 = distance1 > 0 ? (points->m[0][mid]-points->m[0][bot])/distance1 : 0;
   dz0 = distance0 > 0 ? (points->m[2][top]-points->m[2][bot])/distance0 : 0;
