@@ -24,3 +24,4 @@ $make
 # Personal Notes
 - Trying to implement DRY (Don't Repeat Yourself)
 - If Gouraud doesn't work, make unit tests (should be doing that anyway)
+- Commit often
