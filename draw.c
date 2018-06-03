@@ -193,62 +193,76 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb,
     }
   }
 }
-//draw_gouraud- draw polygons using gouraud shading
-/*
-STEPS
-1- Create a dictionary of vertex:normals 
-2- Compute I for each vertex of the polygon
-3- Use scanline conversion to calculate color for each pixel 
-*/
+/* HELPER FUNCTIONS START */
+char * get_id(double points[]){
+	char * id = (char *)malloc(sizeof(char *));
+	char * tmp = (char *)malloc(sizeof(char *));
+	strcpy(id, "");
+	for (int i=0; i<3;++i)
+	{	
+		sprintf(tmp, "%4.3f", points[i]);
+		strcat(id, tmp);
+	}
+	free(tmp);
+	return id;
+}
+void set_intensities(struct vertex_normal ** dict, double *view, double light[2][3], color ambient,
+		  double *areflect, double *dreflect, double *sreflect)
+{
+	struct vertex_normal* vn= *dict;	
+	struct vertex_normal* v;
+	for (v=vn; v!=NULL; v=v->hh.next){
+		v->c = get_lighting(v->norm, view, ambient, light, areflect, dreflect, sreflect);
+	}
+}
+void append(struct vertex_normal **dict, struct vertex_normal **add, struct matrix **mat, int index, char * vertex)
+{
+	struct vertex_normal *vn = *dict;
+	struct vertex_normal *v = *add;
+	struct matrix *points = *mat;
+	v = (struct vertex_normal *)malloc(sizeof(struct vertex_normal ));
+	strcpy(v->vert, vertex);
+    v->norm =calculate_normal(points, index);
+	HASH_ADD_STR(vn, vert, v);
+}
+void modify(struct vertex_normal **mod, struct matrix ** mat, int index)
+{
+	struct vertex_normal *v= *mod;
+	struct matrix *points = *mat;
+	for (int i=0;i<3;++i){
+		v->norm[i] += (calculate_normal(points, index))[i];
+	}		
+}
+
+/* HELPER FUNCTIONS END */
 void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 		  double *view, double light[2][3], color ambient,
 		  double *areflect, double *dreflect, double *sreflect)
 {
-//create a mapping(array of hashable values) 
-	struct vertex_normal *vn = NULL; //the hash table
-	int point;
-	for (point=0; point < points->lastcol; ++point) {
-	//find vertex from the inputs	
-		int p = point % 3;
-		char * vertex = (char *)malloc(sizeof(char *));
-		strcpy(vertex, "");
-		char *tmp = (char *)malloc(sizeof(char *));
-		for (int i=0; i<3;++i)
-		{	
-			sprintf(tmp, "%4.3f", points->m[i][point]);
-			strcat(vertex, tmp);
-		}
-		free(tmp);
+	struct vertex_normal *vn = NULL; 	
+	for (int point=0; point < points->lastcol; ++point) {
+		double pa[3] = {points->m[0][point], 
+		points->m[1][point], points->m[2][point]};
+		char * vertex = get_id(pa);
+	
 		struct vertex_normal *v;	
 		HASH_FIND_STR(vn, vertex, v); 
 		if (v==NULL)
-		{
-			v = (struct vertex_normal *)malloc(sizeof(struct vertex_normal ));
-			strcpy(v->vert, vertex);
-		    v->norm =calculate_normal(points, point - p );
-			HASH_ADD_STR(vn, vert, v);
-		}
+			append(&vn, &v, &points, point - point % 3, vertex);
 		else
-		{
-			for (int i=0;i<3;++i)
-				v->norm[i] += (calculate_normal(points, point - p))[i];
-		}
+			modify(&vn, &points, point - point % 3);
 	}
-	//end of calculating dictionary values
-	//start of calculating I values
-	struct vertex_normal *v;
-	for (v=vn; v!=NULL; v=v->hh.next){
-		//get lighting
-		v->c = get_lighting(v->norm, view, ambient, light, areflect, dreflect, sreflect);
-	}
-	//drawing!
+	set_intensities(&vn, view, light, ambient, areflect, dreflect, sreflect);	
 
+	for (int point = 0; point < points->lastcol-2; point+=3){
+		double *normal = calculate_normal(points, point);
+		if ( dot_product(normal, view) > 0 ) {
+		}
+	//find bot, mid, top
+	}
 //void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color c) {
 //i is points
-
-	for (point=0; point < points->lastcol-2; point+=3) {
-	//normal not defined, need to find normal from the dictionary
-		if ( dot_product(normal, view) > 0 ) {
+/*
 	int i = point;
 	int top, mid, bot, y;
   int distance0, distance1, distance2;
@@ -330,6 +344,7 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
   }
 }
 		}
+*/
 	}
 
 
