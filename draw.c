@@ -276,9 +276,16 @@ void find_distances(double distance[], struct matrix **mat, int pos[], int y)
 	distance[1] = (int)(points->m[1][pos[1]]) - y;
 	distance[2] = (int)(points->m[1][pos[2]]) - (int)(points->m[1][pos[1]]);
 }
-void find_deltas()
+void find_deltas(double distance[], struct matrix **mat, int pos[], double *dx0, double *dx1, double *dz0, double *dz1) 
 {
+  struct matrix *points = *mat;
+  *dx0 = distance[0] > 0 ? (points->m[0][pos[2]]-points->m[0][pos[0]])/distance[0] : 0;
+  *dx1 = distance[1] > 0 ? (points->m[0][pos[1]]-points->m[0][pos[0]])/distance[1] : 0;
+  *dz0 = distance[0] > 0 ? (points->m[2][pos[2]]-points->m[2][pos[0]])/distance[0] : 0;
+  *dz1 = distance[1] > 0 ? (points->m[2][pos[1]]-points->m[2][pos[0]])/distance[1] : 0;
 }
+            
+            
 /* HELPER FUNCTIONS END */
 void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 		  double *view, double light[2][3], color ambient,
@@ -305,6 +312,7 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 			double y[3] = {points->m[1][point],points->m[1][point+1],points->m[1][point+2]};
 			int pos[3] = {};
 			find_positions(y, pos, point); 
+            //pos[0] = bot, pos[2] = top
 			double x0, x1, z0, z1;
 			double dx0, dx1, dz0, dz1;
 		    x0 = points->m[0][pos[0]], x1 = points->m[0][pos[0]];
@@ -312,20 +320,25 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 			int yindex = (int)(points->m[1][pos[0]]);
 			double distance[3] = {};
 			find_distances(distance, &points, pos, yindex);
-
+            find_deltas(distance, &points, pos, &dx0, &dx1, &dz0, &dz1); 
+            color intensity[3];
+            for (int p=0; p<3; ++p){
+                double tmp[3] = {points->m[0][pos[p]], 
+		        points->m[1][pos[p]], points->m[2][pos[p]]};
+                char * id = get_id(tmp);
+                struct vertex_normal * v;
+                HASH_FIND_STR(vn, id, v); 
+                if (v)
+                    printf("this works\n");
+            }
 		}
 	}
+    //
 //void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color c) {
 /*	int top, mid, bot, y;
   int distance0, distance1, distance2;
   double x0, x1, y0, y1, y2, dx0, dx1, z0, z1, dz0, dz1;
-  int flip = 0;
-  dx0 = distance0 > 0 ? (points->m[0][top]-points->m[0][bot])/distance0 : 0;
-  dx1 = distance1 > 0 ? (points->m[0][mid]-points->m[0][bot])/distance1 : 0;
-  dz0 = distance0 > 0 ? (points->m[2][top]-points->m[2][bot])/distance0 : 0;
-  dz1 = distance1 > 0 ? (points->m[2][mid]-points->m[2][bot])/distance1 : 0;
-
-  while ( y <= (int)points->m[1][top] ) {
+  int flip = 0  while ( y <= (int)points->m[1][top] ) {
 	//c not defined, need to find intensity from the vertex and also calculate it
     draw_line(x0, y, z0, x1, y, z1, s, zb, c);
 
