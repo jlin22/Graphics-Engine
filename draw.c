@@ -206,31 +206,28 @@ char * get_id(double points[]){
 	free(tmp);
 	return id;
 }
-void set_intensities(struct vertex_normal ** dict, double *view, double light[2][3], color ambient,
+void set_intensities(struct vertex_normal ** vn, double *view, double light[2][3], color ambient,
 		  double *areflect, double *dreflect, double *sreflect)
 {
-	struct vertex_normal* vn= *dict;	
 	struct vertex_normal* v;
-	for (v=vn; v!=NULL; v=v->hh.next){
+	for (v=*vn; v!=NULL; v=v->hh.next){
 		v->c = get_lighting(v->norm, view, ambient, light, areflect, dreflect, sreflect);
 	}
 }
-void append(struct vertex_normal **dict, struct vertex_normal **add, struct matrix **mat, int index, char * vertex)
+void append(struct vertex_normal **vn, struct vertex_normal **add, struct matrix **mat, int index, char * vertex)
 {
-	struct vertex_normal *vn = *dict;
 	struct vertex_normal *v = *add;
 	struct matrix *points = *mat;
 	v = (struct vertex_normal *)malloc(sizeof(struct vertex_normal ));
 	strcpy(v->vert, vertex);
     v->norm =calculate_normal(points, index);
-	HASH_ADD_STR(vn, vert, v);
+	HASH_ADD_STR(*vn, vert, v);
 }
-void modify(struct vertex_normal **mod, struct matrix ** mat, int index)
+void modify(struct vertex_normal **vn, struct matrix ** mat, int index)
 {
-	struct vertex_normal *v= *mod;
 	struct matrix *points = *mat;
 	for (int i=0;i<3;++i){
-		v->norm[i] += (calculate_normal(points, index))[i];
+		(*vn)->norm[i] += (calculate_normal(points, index))[i];
 	}		
 }
 void find_positions(double y[], int pos[], int i )
@@ -328,8 +325,7 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
                 char * id = get_id(tmp);
                 struct vertex_normal * v;
                 HASH_FIND_STR(vn, id, v); 
-                if (v)
-                    printf("this works\n");
+                intensity[p] = v->c;
             }
 		}
 	}
