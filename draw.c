@@ -226,11 +226,12 @@ void append(struct vertex_normal **vn, struct vertex_normal **add, struct matrix
 void modify(struct vertex_normal **vn, struct matrix ** mat, int index)
 {
 	struct matrix *points = *mat;
+    double * addend = calculate_normal(points, index);
+    normalize(addend);
 	for (int i=0;i<3;++i){
-       // (*vn)->norm[i] = normalize(v->norm[i] + normalize((calculate_normal(points, index))[i]);
-        normalize((*vn)->norm);
-        //printf("%f\n", (*vn)->norm[i]);
+        (*vn)->norm[i] += addend[i];
 	}		
+    normalize((*vn)->norm);
 }
 void find_positions(double y[], int pos[], int i )
 {//y[i] = y(i), pos[0] = bot, pos[2] = top
