@@ -282,12 +282,22 @@ void find_deltas(double distance[], struct matrix **mat, int pos[], double *dx0,
   *dz0 = distance[0] > 0 ? (points->m[2][pos[2]]-points->m[2][pos[0]])/distance[0] : 0;
   *dz1 = distance[1] > 0 ? (points->m[2][pos[1]]-points->m[2][pos[0]])/distance[1] : 0;
 }
-void draw_gouraud_lines(int x0, int y0, double z0,
-               int x1, int y1, double z1,
+void draw_gouraud_lines(int x0, int y, double z0,
+               int x1, double z1,
                double i1, double i2,
                screen s, zbuffer zb)
 {
+    if (x0 > x1){
+       //swap x0, x1, z0, z1, and i1 and i2 
+    }
+    for (int i = x0; i < x1; ++i){
+        //interpolate z
+        double z;
+        //interpolate i
 
+        color c;
+        plot( s, zb, c, i, y, z );
+    }
 }
             
 /* HELPER FUNCTIONS END */
@@ -299,13 +309,14 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 	for (int point=0; point < points->lastcol; ++point) {
 		double pa[3] = {points->m[0][point], 
 		points->m[1][point], points->m[2][point]};
-		char * vertex = get_id(pa);
+		char *vertex = get_id(pa);
 	
 		struct vertex_normal *v;	
 		HASH_FIND_STR(vn, vertex, v); 
 		if (v==NULL)
 			append(&vn, &points, point - point % 3, vertex);
 		else{
+            //doesn't get the norm
 			modify(&v, &points, point - point % 3);
         }
 	}
