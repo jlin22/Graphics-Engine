@@ -220,19 +220,22 @@ void print_norms(struct vertex_normal **v)
     printf("1 : %f\n", (*v)->norm[1]);
     printf("2 : %f\n", (*v)->norm[2]);
 }
-void append(struct vertex_normal **vn, struct vertex_normal **add, struct matrix **mat, int index, char * vertex)
+void append(struct vertex_normal **vn, struct matrix **mat, int index, char * vertex)
 {
-	struct vertex_normal *v = *add;
-	struct matrix *points = *mat;
+	struct vertex_normal *v;
+    struct matrix *points = *mat;
 	v = (struct vertex_normal *)malloc(sizeof(struct vertex_normal ));
 	strcpy(v->vert, vertex);
-    v->norm =calculate_normal(points, index);
+    //calculate_normal doesn't do what it's supposed to
+    //maybe my index is wrong
+    printf("index : %d\n", index);
+    v->norm = calculate_normal(points, index);
     normalize(v->norm);
 	HASH_ADD_STR(*vn, vert, v);
  }
 void modify(struct vertex_normal **vn, struct matrix ** mat, int index)
 {
-    print_norms(vn);
+    //print_norms(vn);
 	struct matrix *points = *mat;
     double * addend = calculate_normal(points, index);
     normalize(addend);
@@ -291,8 +294,12 @@ void find_deltas(double distance[], struct matrix **mat, int pos[], double *dx0,
   *dz0 = distance[0] > 0 ? (points->m[2][pos[2]]-points->m[2][pos[0]])/distance[0] : 0;
   *dz1 = distance[1] > 0 ? (points->m[2][pos[1]]-points->m[2][pos[0]])/distance[1] : 0;
 }
-void draw_gouraud_lines()
+void draw_gouraud_lines(int x0, int y0, double z0,
+               int x1, int y1, double z1,
+               double i1, double i2,
+               screen s, zbuffer zb)
 {
+
 }
             
 /* HELPER FUNCTIONS END */
@@ -309,10 +316,10 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 		struct vertex_normal *v;	
 		HASH_FIND_STR(vn, vertex, v); 
 		if (v==NULL)
-			append(&vn, &v, &points, point - point % 3, vertex);
-		else
-            //somethings off... the norm doesn't exist
+			append(&vn, &points, point - point % 3, vertex);
+		else{
 			modify(&v, &points, point - point % 3);
+        }
 	}
 	set_intensities(&vn, view, light, ambient, areflect, dreflect, sreflect);	
 
