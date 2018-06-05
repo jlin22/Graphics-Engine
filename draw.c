@@ -214,6 +214,12 @@ void set_intensities(struct vertex_normal ** vn, double *view, double light[2][3
 		v->c = get_lighting(v->norm, view, ambient, light, areflect, dreflect, sreflect);
 	}
 }
+void print_norms(struct vertex_normal **v)
+{
+    printf("0 : %f\n", (*v)->norm[0]);
+    printf("1 : %f\n", (*v)->norm[1]);
+    printf("2 : %f\n", (*v)->norm[2]);
+}
 void append(struct vertex_normal **vn, struct vertex_normal **add, struct matrix **mat, int index, char * vertex)
 {
 	struct vertex_normal *v = *add;
@@ -221,16 +227,17 @@ void append(struct vertex_normal **vn, struct vertex_normal **add, struct matrix
 	v = (struct vertex_normal *)malloc(sizeof(struct vertex_normal ));
 	strcpy(v->vert, vertex);
     v->norm =calculate_normal(points, index);
+    normalize(v->norm);
 	HASH_ADD_STR(*vn, vert, v);
-}
+ }
 void modify(struct vertex_normal **vn, struct matrix ** mat, int index)
 {
+    print_norms(vn);
 	struct matrix *points = *mat;
     double * addend = calculate_normal(points, index);
     normalize(addend);
-	for (int i=0;i<3;++i){
+	for (int i=0;i<3;++i)        
         (*vn)->norm[i] += addend[i];
-	}		
     normalize((*vn)->norm);
 }
 void find_positions(double y[], int pos[], int i )
@@ -304,10 +311,8 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 		if (v==NULL)
 			append(&vn, &v, &points, point - point % 3, vertex);
 		else
-            //need to change modify so it normalizes the points before it adds them
-            //v->norm = normalize(normalize(v->norm) + normalize(add norm))
-            //(*vn)->norm[i] = normalize(v->norm[i] + normalize((calculate_normal(points, index))[i]);
-			modify(&vn, &points, point - point % 3);
+            //somethings off... the norm doesn't exist
+			modify(&v, &points, point - point % 3);
 	}
 	set_intensities(&vn, view, light, ambient, areflect, dreflect, sreflect);	
 
