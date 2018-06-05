@@ -227,7 +227,9 @@ void modify(struct vertex_normal **vn, struct matrix ** mat, int index)
 {
 	struct matrix *points = *mat;
 	for (int i=0;i<3;++i){
-		(*vn)->norm[i] += (calculate_normal(points, index))[i];
+       // (*vn)->norm[i] = normalize(v->norm[i] + normalize((calculate_normal(points, index))[i]);
+        normalize((*vn)->norm);
+        //printf("%f\n", (*vn)->norm[i]);
 	}		
 }
 void find_positions(double y[], int pos[], int i )
@@ -281,7 +283,9 @@ void find_deltas(double distance[], struct matrix **mat, int pos[], double *dx0,
   *dz0 = distance[0] > 0 ? (points->m[2][pos[2]]-points->m[2][pos[0]])/distance[0] : 0;
   *dz1 = distance[1] > 0 ? (points->m[2][pos[1]]-points->m[2][pos[0]])/distance[1] : 0;
 }
-            
+void draw_gouraud_lines()
+{
+}
             
 /* HELPER FUNCTIONS END */
 void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
@@ -299,6 +303,9 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 		if (v==NULL)
 			append(&vn, &v, &points, point - point % 3, vertex);
 		else
+            //need to change modify so it normalizes the points before it adds them
+            //v->norm = normalize(normalize(v->norm) + normalize(add norm))
+            //(*vn)->norm[i] = normalize(v->norm[i] + normalize((calculate_normal(points, index))[i]);
 			modify(&vn, &points, point - point % 3);
 	}
 	set_intensities(&vn, view, light, ambient, areflect, dreflect, sreflect);	
@@ -319,6 +326,8 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 			find_distances(distance, &points, pos, yindex);
             find_deltas(distance, &points, pos, &dx0, &dx1, &dz0, &dz1); 
             color intensity[3];
+            //crt fnc for this later
+            //getting intensity of vertexes
             for (int p=0; p<3; ++p){
                 double tmp[3] = {points->m[0][pos[p]], 
 		        points->m[1][pos[p]], points->m[2][pos[p]]};
@@ -327,15 +336,14 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
                 HASH_FIND_STR(vn, id, v); 
                 intensity[p] = v->c;
             }
-		}
-	}
-    //
-//void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color c) {
-/*	int top, mid, bot, y;
-  int distance0, distance1, distance2;
-  double x0, x1, y0, y1, y2, dx0, dx1, z0, z1, dz0, dz1;
-  int flip = 0  while ( y <= (int)points->m[1][top] ) {
-	//c not defined, need to find intensity from the vertex and also calculate it
+            while (yindex <= (int)points->m[1][pos[2]]){
+                //create a drawline for gouraud drawing
+                x0+= dx0, x1+= dx1;
+                z0+= dz0, z1+= dz1;
+                ++yindex; 
+            }
+            //drawlines
+            /*while ( y <= (int)points->m[1][top] ) {
     draw_line(x0, y, z0, x1, y, z1, s, zb, c);
 
     x0+= dx0;
@@ -350,12 +358,12 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
       dz1 = distance2 > 0 ? (points->m[2][top]-points->m[2][mid])/distance2 : 0;
       x1 = points->m[0][mid];
       z1 = points->m[2][mid];
-    } 
-  }
-}
+    }//end flip code
+  }/
+  */
 		}
-*/
 	}
+}
 
 
 /*======== void add_box() ==========
@@ -367,7 +375,6 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
   double height
   double depth
   Returns:
-
   add the points for a rectagular prism whose
   upper-left corner is (x, y, z) with width,
   height and depth dimensions.
