@@ -214,30 +214,18 @@ void set_intensities(struct vertex_normal ** vn, double *view, double light[2][3
 		v->c = get_lighting(v->norm, view, ambient, light, areflect, dreflect, sreflect);
 	}
 }
-void print_norms(struct vertex_normal **v)
-{
-    printf("0 : %f\n", (*v)->norm[0]);
-    printf("1 : %f\n", (*v)->norm[1]);
-    printf("2 : %f\n", (*v)->norm[2]);
-}
-void append(struct vertex_normal **vn, struct matrix **mat, int index, char * vertex)
+void append(struct vertex_normal **vn, struct matrix **points, int index, char * vertex)
 {
 	struct vertex_normal *v;
-    struct matrix *points = *mat;
 	v = (struct vertex_normal *)malloc(sizeof(struct vertex_normal ));
 	strcpy(v->vert, vertex);
-    //calculate_normal doesn't do what it's supposed to
-    //maybe my index is wrong
-    printf("index : %d\n", index);
-    v->norm = calculate_normal(points, index);
+    v->norm = calculate_normal(*points, index);
     normalize(v->norm);
 	HASH_ADD_STR(*vn, vert, v);
  }
-void modify(struct vertex_normal **vn, struct matrix ** mat, int index)
+void modify(struct vertex_normal **vn, struct matrix ** points, int index)
 {
-    //print_norms(vn);
-	struct matrix *points = *mat;
-    double * addend = calculate_normal(points, index);
+    double * addend = calculate_normal(*points, index);
     normalize(addend);
 	for (int i=0;i<3;++i)        
         (*vn)->norm[i] += addend[i];
