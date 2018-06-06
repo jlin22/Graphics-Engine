@@ -211,7 +211,9 @@ void set_intensities(struct vertex_normal ** vn, double *view,
         normalize(v->norm);
 		v->c = get_lighting(v->norm, view, ambient, light, 
                             areflect, dreflect, sreflect);
-	}
+      //colors are really small numbers...
+      printf("%d %d %d\n", v->c.red, v->c.blue, v->c.green);
+    }	
 }
 void append(struct vertex_normal **vn, struct matrix **points, int index, int vertex)
 {
@@ -288,9 +290,10 @@ void find_deltas(double distance[], struct matrix **mat, int pos[], color intens
   (*di0).blue = distance[0] > 0 ? ((intensity[pos[2]]).blue - (intensity[pos[0]]).blue) / distance[0] : 0;  
   (*di1).blue = distance[1] > 0 ? ((intensity[pos[1]]).blue - (intensity[pos[0]]).blue) / distance[1] : 0;
 }
-void find_intensities(struct vertex_normal **vn, struct matrix **points, int pos[],color intensity[])
+void find_intensities(struct vertex_normal **vn, struct matrix **points, int pos[], int point, color intensity[])
 {
     for (int p=0; p<3; ++p){
+
         double tmp[3] = {(*points)->m[0][pos[p]], 
         (*points)->m[1][pos[p]], (*points)->m[2][pos[p]]};
         int id = get_id(tmp);
@@ -383,7 +386,7 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 			double distance[3] = {}; 
             color intensity[3]; 
             
-            find_intensities(&vn, &points, pos, intensity);
+            find_intensities(&vn, &points, pos, point, intensity);
             find_distances(distance, &points, pos, yindex);
             find_deltas(distance, &points, pos, intensity, &dx0, &dx1, &dz0, &dz1, &di0, &di1); 
             int flip = 0;
@@ -394,6 +397,9 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
                 c0.red += di0.red, c1.red += di1.red;
                 c0.green += di0.green, c1.green += di1.green;
                 c0.blue += di0.blue, c1.blue += di1.blue;
+                //the values are strange
+                //printf("%d %d %d \n", c0.red, c0.blue, c0.green);
+
                 ++yindex; 
                 if ( !flip && yindex >= (int)(points->m[1][pos[1]]) ) { //if its flipped and past the middle
                     change_deltas(&flip, distance, intensity, pos, &points, &dx1, &dz1, &di1, &x1, &z1, &c1);
