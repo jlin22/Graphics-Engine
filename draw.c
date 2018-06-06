@@ -194,34 +194,32 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb,
   }
 }
 /* HELPER FUNCTIONS START */
-char * get_id(double points[]){
-	char * id = (char *)malloc(sizeof(char *));
-	char * tmp = (char *)malloc(sizeof(char *));
-	strcpy(id, "");
-	for (int i=0; i<3;++i)
-	{	
-		sprintf(tmp, "%4.3f", points[i]);
-		strcat(id, tmp);
-	}
-	free(tmp);
+
+int get_id(double points[]){
+    int id = 0;
+    for (int i=0; i<3;++i)
+        id += floor(points[i]) * (int)pow(10, 3 * i);
 	return id;
 }
-void set_intensities(struct vertex_normal ** vn, double *view, double light[2][3], color ambient,
-		  double *areflect, double *dreflect, double *sreflect)
+void set_intensities(struct vertex_normal ** vn, double *view, 
+                    double light[2][3], color ambient, 
+                    double *areflect, double *dreflect, 
+                    double *sreflect)
 {
 	struct vertex_normal* v;
 	for (v=*vn; v!=NULL; v=v->hh.next){
-		v->c = get_lighting(v->norm, view, ambient, light, areflect, dreflect, sreflect);
+		v->c = get_lighting(v->norm, view, ambient, light, 
+                            areflect, dreflect, sreflect);
 	}
 }
-void append(struct vertex_normal **vn, struct matrix **points, int index, char * vertex)
+void append(struct vertex_normal **vn, struct matrix **points, int index, int vertex)
 {
-	struct vertex_normal *v;
-	v = (struct vertex_normal *)malloc(sizeof(struct vertex_normal ));
-	strcpy(v->vert, vertex);
+	struct vertex_normal *v = (struct vertex_normal *)
+            malloc(sizeof(struct vertex_normal));
+    v->id = vertex;
     v->norm = calculate_normal(*points, index);
     normalize(v->norm);
-	HASH_ADD_STR(*vn, vert, v);
+	HASH_ADD_INT(*vn, id, v);
  }
 void modify(struct vertex_normal **vn, struct matrix ** points, int index)
 {
@@ -309,14 +307,14 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 	for (int point=0; point < points->lastcol; ++point) {
 		double pa[3] = {points->m[0][point], 
 		points->m[1][point], points->m[2][point]};
-		char *vertex = get_id(pa);
+        //try to change it to int
+	    int vertex = get_id(pa);
 	
 		struct vertex_normal *v;	
-		HASH_FIND_STR(vn, vertex, v); 
+		HASH_FIND_INT(vn, &vertex, v); 
 		if (v==NULL)
 			append(&vn, &points, point - point % 3, vertex);
 		else{
-            //doesn't get the norm
 			modify(&v, &points, point - point % 3);
         }
 	}
@@ -340,12 +338,15 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
             color intensity[3];
             //crt fnc for this later
             //getting intensity of vertexes
+            
             for (int p=0; p<3; ++p){
                 double tmp[3] = {points->m[0][pos[p]], 
 		        points->m[1][pos[p]], points->m[2][pos[p]]};
-                char * id = get_id(tmp);
+                //change this to double id = get_id(tmp);
+                int id = get_id(tmp);
                 struct vertex_normal * v;
-                HASH_FIND_STR(vn, id, v); 
+                //change this to HASH_FIND_STR
+                HASH_FIND_INT(vn, &id, v); 
                 intensity[p] = v->c;
             }
             while (yindex <= (int)points->m[1][pos[2]]){

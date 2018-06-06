@@ -4,8 +4,8 @@
 #include "ml6.h"
 
 struct vertex_normal{
-    char vert[22];
-	double *norm;
+    int id;
+    double *norm;
 	color c;
     UT_hash_handle hh;
 
