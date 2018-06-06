@@ -194,7 +194,6 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb,
   }
 }
 /* HELPER FUNCTIONS START */
-
 int get_id(double points[]){
     int id = 0;
     for (int i=0; i<3;++i)
@@ -223,6 +222,7 @@ void append(struct vertex_normal **vn, struct matrix **points, int index, int ve
  }
 void modify(struct vertex_normal **vn, struct matrix ** points, int index)
 {
+    //printf("%f\n", v->norm[0]);
     double * addend = calculate_normal(*points, index);
     normalize(addend);
 	for (int i=0;i<3;++i)        
