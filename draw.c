@@ -333,7 +333,7 @@ void draw_gouraud_lines(int x0, int y, double z0,
     double dx = x1 - x0;
     double dz = (z1 - z0) / dx; 
     double di[3];
-    printf("%d\n", i1.red - i0.red);
+    //printf("%d\n", i1.red - i0.red);
     di[0] = (double)(i1.red - i0.red) / dx;
     di[1] = (double)(i1.green - i0.green) / dx;
     di[2] = (double)(i1.blue - i0.blue) /dx;
