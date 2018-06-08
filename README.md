@@ -25,3 +25,4 @@ $make
 - Trying to implement DRY (Don't Repeat Yourself)
 - If Gouraud doesn't work, make unit tests (should be doing that anyway)
 - Commit often
+- Intensities are messed up, look at all functions that deal with it
