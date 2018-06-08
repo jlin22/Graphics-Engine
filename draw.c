@@ -212,7 +212,7 @@ void set_intensities(struct vertex_normal ** vn, double *view,
                             areflect, dreflect, sreflect);
        // printf("%f %f %f\n", v->norm[0], v->norm[1], v->norm[2]);
         if ( dot_product(v->norm, view) > 0 ) {
-        //    printf("%d %d %d\n", v->c.red, v->c.blue, v->c.green);
+     //       printf("%d %d %d\n", v->c.red, v->c.blue, v->c.green);
         }
     }	
 }
@@ -277,7 +277,7 @@ void find_distances(double distance[], struct matrix **mat, int pos[])
 	distance[0] = (int)(points->m[1][pos[2]]) - (int)points->m[1][pos[0]];
 	distance[1] = (int)(points->m[1][pos[1]]) - (int)points->m[1][pos[0]];
 	distance[2] = (int)(points->m[1][pos[2]]) - (int)(points->m[1][pos[1]]);
-    //printf("%f %f %f\n", distance[0], distance[1], distance[2]);
+   // printf("%f %f %f\n", distance[0], distance[1], distance[2]);
 }
 void find_deltas(double distance[], struct matrix **mat, int pos[], color intensity[], double *dx0, double *dx1, double *dz0, double *dz1, double di0[], double di1[]) 
 {
@@ -286,12 +286,16 @@ void find_deltas(double distance[], struct matrix **mat, int pos[], color intens
   *dx1 = distance[1] > 0 ? (points->m[0][pos[1]]-points->m[0][pos[0]])/distance[1] : 0;
   *dz0 = distance[0] > 0 ? (points->m[2][pos[2]]-points->m[2][pos[0]])/distance[0] : 0;
   *dz1 = distance[1] > 0 ? (points->m[2][pos[1]]-points->m[2][pos[0]])/distance[1] : 0;
-  (di0)[0] = distance[0] > 0 ? (double)((intensity[pos[2]]).red - (intensity[pos[0]]).red) / distance[0] : 0;  
-  (di1)[0] = distance[1] > 0 ? (double)((intensity[pos[1]]).red - (intensity[pos[0]]).red) / distance[1] : 0;
-  (di0)[1] = distance[0] > 0 ? (double)((intensity[pos[2]]).green - (intensity[pos[0]]).green) / distance[0] : 0;  
-  (di1)[1] = distance[1] > 0 ? (double)((intensity[pos[1]]).green - (intensity[pos[0]]).green) / distance[1] : 0;
-  (di0)[2] = distance[0] > 0 ? (double)((intensity[pos[2]]).blue - (intensity[pos[0]]).blue) / distance[0] : 0;  
-  (di1)[2] = distance[1] > 0 ? (double)((intensity[pos[1]]).blue - (intensity[pos[0]]).blue) / distance[1] : 0;
+ // for (int i = 0; i < 3 ; ++i)
+//      printf("%d : %d %d %d\n", i, intensity[i].red, intensity[i].green, intensity[i].blue);
+  (di0)[0] = distance[0] > 0 ? ((intensity[2]).red - (intensity[0]).red) / distance[0] : 0;  
+  (di1)[0] = distance[1] > 0 ? ((intensity[1]).red - (intensity[0]).red) / distance[1] : 0;
+  (di0)[1] = distance[0] > 0 ? ((intensity[2]).green - (intensity[0]).green) / distance[0] : 0;  
+  (di1)[1] = distance[1] > 0 ? ((intensity[1]).green - (intensity[0]).green) / distance[1] : 0;
+  (di0)[2] = distance[0] > 0 ? ((intensity[2]).blue - (intensity[0]).blue) / distance[0] : 0;  
+  (di1)[2] = distance[1] > 0 ? ((intensity[1]).blue - (intensity[0]).blue) / distance[1] : 0;
+//  printf("%f %f %f \n", di1[0], di1[1], di1[2]);
+  //printf("%f %f %f \n", di0[0], di0[1], di0[2]);
 }
 void find_intensities(struct vertex_normal **vn, struct matrix **points, int pos[], int point, color intensity[])
 {
@@ -302,7 +306,8 @@ void find_intensities(struct vertex_normal **vn, struct matrix **points, int pos
         struct vertex_normal * v;
         HASH_FIND_INT(*vn, &id, v); 
         intensity[p] = v->c;
-    } 
+        // printf("%d %d %d\n", v->c.red, v->c.blue, v->c.green);
+   } 
 }
 void draw_gouraud_lines(int x0, int y, double z0,
                int x1, double z1,
@@ -324,18 +329,21 @@ void draw_gouraud_lines(int x0, int y, double z0,
         i1 = it;
         z1 = z;
     }
+    //gotta change colors
     double dx = x1 - x0;
     double dz = (z1 - z0) / dx; 
-    color di;
-    di.red = (i1.red - i0.red) / dx;
-    di.green = (i1.green - i0.green) / dx;
-    di.blue = (i1.blue - i0.blue) /dx;
+    double di[3];
+    printf("%d\n", i1.red - i0.red);
+    di[0] = (double)(i1.red - i0.red) / dx;
+    di[1] = (double)(i1.green - i0.green) / dx;
+    di[2] = (double)(i1.blue - i0.blue) /dx;
+//    printf("%f %f %f \n", di[0], di[1], di[2]);
     for (int i = x0; i < x1; ++i){
         double z = z0 + dz * (i - x0); 
         color c;
-        c.red = i0.red + di.red * (i - x0);
-        c.green = i0.green + di.green * (i - x0);
-        c.blue = i0.blue + di.blue * (i - x0);
+        c.red = i0.red + (int)(di[0] * (i - x0));
+        c.green = i0.green + (int)(di[1] * (i - x0));
+        c.blue = i0.blue + (int)(di[2] * (i - x0));
         plot( s, zb, c, i, y, z ); //i in this case is x val
     }
 }
@@ -345,12 +353,12 @@ void change_deltas(int *flip, double distance[], color intensity[], int pos[], s
     *flip = 1;
     *dx1 = distance[2] > 0 ? ((*points)->m[0][pos[2]]-(*points)->m[0][pos[1]])/distance[2] : 0;
     *dz1 = distance[2] > 0 ? ((*points)->m[2][pos[2]]-(*points)->m[2][pos[1]])/distance[2] : 0;
-    (di1)[0] = distance[2] > 0 ? ((intensity[pos[2]]).red - (intensity[pos[1]]).red)/distance[2] : 0;
-    (di1)[1] = distance[2] > 0 ? ((intensity[pos[2]]).green - (intensity[pos[1]]).green)/distance[2] : 0;
-    (di1)[2] = distance[2] > 0 ? ((intensity[pos[2]]).blue - (intensity[pos[1]]).blue)/distance[2] : 0;
+    (di1)[0] = distance[2] > 0 ? ((intensity[2]).red - (intensity[1]).red)/distance[2] : 0;
+    (di1)[1] = distance[2] > 0 ? ((intensity[2]).green - (intensity[1]).green)/distance[2] : 0;
+    (di1)[2] = distance[2] > 0 ? ((intensity[2]).blue - (intensity[1]).blue)/distance[2] : 0;
     *x1 = ((*points))->m[0][pos[1]];
     *z1 = ((*points))->m[2][pos[1]];
-    *c1 = intensity[pos[1]]; 
+    *c1 = intensity[1]; 
 }
             
 /* HELPER FUNCTIONS END */
@@ -380,8 +388,8 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 			int pos[3]; //pos[0] = bot, pos[1] = mid, pos[2] = top
 			find_positions(y, pos, point);
             double x0, x1, z0, z1, dx0, dx1, dz0, dz1;
-            //can't use color di0 and di1, they need to be doubles
             color c0, c1;
+            //I didn't calculate c0, c1
             double di0[3];
             double di1[3];
 		    x0 = points->m[0][pos[0]], x1 = points->m[0][pos[0]];
@@ -391,6 +399,8 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
             color intensity[3]; 
             
             find_intensities(&vn, &points, pos, point, intensity);
+            c0 = intensity[0];
+            c1 = intensity[0];
             find_distances(distance, &points, pos);
             find_deltas(distance, &points, pos, intensity, &dx0, &dx1, &dz0, &dz1, di0, di1); 
             int flip = 0;
