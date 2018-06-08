@@ -12,6 +12,8 @@ $make
 # Plans (in order of intended completion)
 - ~~Lighting~~
 - Shading
+~~Gouraud~~
+Phong
 - Primitive Shapes: Cylinder, Cones
 - Vary Modifiers (e.g. parabolic, exponential, logarithmic, polynomial, etc...)
 
@@ -25,4 +27,4 @@ $make
 - Trying to implement DRY (Don't Repeat Yourself)
 - If Gouraud doesn't work, make unit tests (should be doing that anyway)
 - Commit often
-- Intensities are messed up, look at all functions that deal with it
+- ~~Intensities are messed up, look at all functions that deal with it(for Gouraud)~~
