@@ -256,7 +256,7 @@ void my_main() {
   light[LOCATION][1] = 0.75;
   light[LOCATION][2] = 1;
 
-  light[COLOR][RED] = 0;
+  light[COLOR][RED] = 0; 
   light[COLOR][GREEN] = 255;
   light[COLOR][BLUE] = 255;
 
@@ -301,35 +301,35 @@ void my_main() {
     switch (op[i].opcode)
 	{
 	case SHADING:
-	break;	
+    	break;	
 	case AMBIENT:
-	ambient.red = op[i].op.ambient.c[0];
-	ambient.green = op[i].op.ambient.c[1];
+    	ambient.red = op[i].op.ambient.c[0];
+        ambient.green = op[i].op.ambient.c[1];
         ambient.blue = op[i].op.ambient.c[2];
-	//printf("ambient: red: %d green: %d blue: %d", ambient.red, ambient.green, ambient.blue);
-	break;
+        //printf("ambient: red: %d green: %d blue: %d", ambient.red, ambient.green, ambient.blue);
+    	break;
 	case LIGHT:
-	light[COLOR][RED] = op[i].op.light.c[0];
-	light[COLOR][GREEN] = op[i].op.light.c[1];
-	light[COLOR][BLUE] = op[i].op.light.c[2];
-	light[LOCATION][0] = op[i].op.light.p->s.l->l[0];
-	light[LOCATION][1] = op[i].op.light.p->s.l->l[1];
-	light[LOCATION][2] = op[i].op.light.p->s.l->l[2];
-	break;
+        light[COLOR][RED] = op[i].op.light.c[0];
+        light[COLOR][GREEN] = op[i].op.light.c[1];
+        light[COLOR][BLUE] = op[i].op.light.c[2];
+        light[LOCATION][0] = op[i].op.light.p->s.l->l[0];
+        light[LOCATION][1] = op[i].op.light.p->s.l->l[1];
+        light[LOCATION][2] = op[i].op.light.p->s.l->l[2];
+        break;
       case CONSTANTS:
-	areflect[RED] = op[i].op.constants.p->s.c->r[0];
-	areflect[GREEN] = op[i].op.constants.p->s.c->g[0];  
-	areflect[BLUE] = op[i].op.constants.p->s.c->b[0];  
+        areflect[RED] = op[i].op.constants.p->s.c->r[0];
+        areflect[GREEN] = op[i].op.constants.p->s.c->g[0];  
+        areflect[BLUE] = op[i].op.constants.p->s.c->b[0];  
 
-	dreflect[RED] = op[i].op.constants.p->s.c->r[1];  
- 	dreflect[GREEN] = op[i].op.constants.p->s.c->g[1]; 
-	dreflect[BLUE] = op[i].op.constants.p->s.c->b[1]; 
+        dreflect[RED] = op[i].op.constants.p->s.c->r[1];  
+        dreflect[GREEN] = op[i].op.constants.p->s.c->g[1]; 
+        dreflect[BLUE] = op[i].op.constants.p->s.c->b[1]; 
 
-	sreflect[RED] = op[i].op.constants.p->s.c->r[2]; 
-	sreflect[GREEN] = op[i].op.constants.p->s.c->g[2]; 
-	sreflect[BLUE] = op[i].op.constants.p->s.c->b[2];
-	break;      
-      case SPHERE:
+        sreflect[RED] = op[i].op.constants.p->s.c->r[2]; 
+        sreflect[GREEN] = op[i].op.constants.p->s.c->g[2]; 
+        sreflect[BLUE] = op[i].op.constants.p->s.c->b[2];
+            break;      
+              case SPHERE:
         /* printf("Sphere: %6.2f %6.2f %6.2f r=%6.2f", */
         /* 	 op[i].op.sphere.d[0],op[i].op.sphere.d[1], */
         /* 	 op[i].op.sphere.d[2], */
@@ -347,10 +347,10 @@ void my_main() {
                    op[i].op.sphere.d[2],
                    op[i].op.sphere.r, step_3d);
         matrix_mult( peek(systems), tmp );
-        //draw_polygons(tmp, t, zb, view, light, ambient,
-       //              areflect, dreflect, sreflect);
-		draw_gouraud(tmp, t, zb, view, light, ambient,
-					 areflect, dreflect, sreflect);
+       // draw_polygons(tmp, t, zb, view, light, ambient,
+        //            areflect, dreflect, sreflect);
+        draw_gouraud(tmp, t, zb, view, light, ambient,
+             areflect, dreflect, sreflect);
         tmp->lastcol = 0;
         break;
       case TORUS:
