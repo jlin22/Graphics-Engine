@@ -349,8 +349,10 @@ void my_main() {
         matrix_mult( peek(systems), tmp );
        // draw_polygons(tmp, t, zb, view, light, ambient,
         //            areflect, dreflect, sreflect);
-        draw_gouraud(tmp, t, zb, view, light, ambient,
-             areflect, dreflect, sreflect);
+        //draw_gouraud(tmp, t, zb, view, light, ambient,
+         //    areflect, dreflect, sreflect);
+        draw_phong(tmp, t, zb, view, light, ambient, areflect, dreflect,
+                sreflect);
         tmp->lastcol = 0;
         break;
       case TORUS:

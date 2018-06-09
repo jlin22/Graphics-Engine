@@ -207,10 +207,10 @@ void set_intensities(struct vertex_normal ** vn, double *view,
                     double *sreflect)
 {
 	struct vertex_normal* v;
-	for (v=*vn; v!=NULL; v=v->hh.next){
+	 for (v=*vn; v!=NULL; v=v->hh.next){
 		v->c = get_lighting(v->norm, view, ambient, light, 
                             areflect, dreflect, sreflect);
-       // printf("%f %f %f\n", v->norm[0], v->norm[1], v->norm[2]);
+      // printf("%f %f %f\n", v->norm[0], v->norm[1], v->norm[2]);
         if ( dot_product(v->norm, view) > 0 ) {
      //       printf("%d %d %d\n", v->c.red, v->c.blue, v->c.green);
         }
@@ -360,12 +360,16 @@ void change_deltas(int *flip, double distance[], color intensity[], int pos[], s
     *z1 = ((*points))->m[2][pos[1]];
     *c1 = intensity[1]; 
 }
-            
+ /*update_values(double *x0, double *x1, double *z0, double *z1, 
+      color *c0, double dx0, double dx1, double dz1,
+      double di0[], double di1[])*/
+
 /* HELPER FUNCTIONS END */
 void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 		  double *view, double light[2][3], color ambient,
 		  double *areflect, double *dreflect, double *sreflect)
 {
+    //draw_gouraud interpolates normals
 	struct vertex_normal *vn = NULL; 	
 	for (int point=0; point < points->lastcol; ++point) {
 		double pa[3] = {points->m[0][point], 
@@ -389,24 +393,22 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 			find_positions(y, pos, point);
             double x0, x1, z0, z1, dx0, dx1, dz0, dz1;
             color c0, c1;
-            //I didn't calculate c0, c1
             double di0[3];
             double di1[3];
 		    x0 = points->m[0][pos[0]], x1 = points->m[0][pos[0]];
             z0 = points->m[2][pos[0]], z1 = points->m[2][pos[0]];
 			int yindex = (int)(points->m[1][pos[0]]);
 			double distance[3] = {}; 
+            find_distances(distance, &points, pos);
             color intensity[3]; 
-            
             find_intensities(&vn, &points, pos, point, intensity);
             c0 = intensity[0];
             c1 = intensity[0];
-            find_distances(distance, &points, pos);
             find_deltas(distance, &points, pos, intensity, &dx0, &dx1, &dz0, &dz1, di0, di1); 
             int flip = 0;
             while (yindex <= (int)points->m[1][pos[2]]){
                 draw_gouraud_lines(x0, yindex, z0, x1, z1, c0, c1, s, zb);  
-                x0+= dx0, x1+= dx1;
+               x0+= dx0, x1+= dx1;
                 z0+= dz0, z1+= dz1;
                 c0.red += (int)di0[0] , c1.red += (int)di1[0];
                 c0.green += (int)di0[1], c1.green += (int)di1[1];
@@ -419,6 +421,159 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
             }
 		}
 	}
+}
+void find_normals(struct vertex_normal **vn, struct matrix **points, int pos[],
+        int point, double normals[3][3])
+{
+    for (int p=0; p<3; ++p){
+        double tmp[3] = {(*points)->m[0][pos[p]], 
+        (*points)->m[1][pos[p]], (*points)->m[2][pos[p]]};
+        int id = get_id(tmp);
+        struct vertex_normal * v;
+        HASH_FIND_INT(*vn, &id, v); 
+        for (int i = 0; i < 3; ++i)
+            normals[p][i] = v->norm[i]; 
+        // printf("%d %d %d\n", v->c.red, v->c.blue, v->c.green);
+   } 
+}
+void find_phong_deltas(double distance[], struct matrix **mat, int pos[], double
+        normals[3][3], double *dx0, double *dx1, double *dz0, double *dz1, double
+        *dn0, double *dn1) 
+{
+  struct matrix *points = *mat;
+  *dx0 = distance[0] > 0 ? (points->m[0][pos[2]]-points->m[0][pos[0]])/distance[0] : 0;
+  *dx1 = distance[1] > 0 ? (points->m[0][pos[1]]-points->m[0][pos[0]])/distance[1] : 0;
+  *dz0 = distance[0] > 0 ? (points->m[2][pos[2]]-points->m[2][pos[0]])/distance[0] : 0;
+  *dz1 = distance[1] > 0 ? (points->m[2][pos[1]]-points->m[2][pos[0]])/distance[1] : 0;
+ // for (int i = 0; i < 3 ; ++i)
+//      printf("%d : %d %d %d\n", i, intensity[i].red, intensity[i].green, intensity[i].blue);
+  for (int i = 0; i < 3; ++i){
+      dn0[i] = distance[0] > 0 ? (normals[2][i] - normals[0][i]) / distance[0] :
+          0;
+      dn1[i] = distance[1] > 0 ? (normals[1][i] - normals[0][i]) / distance[1] :
+          0;
+  }
+}
+void draw_phong_lines(int x0, int y, double z0,
+               int x1, double z1,
+               double * n0, double * n1,
+               screen s, zbuffer zb, double *view, 
+               double light[2][3], color ambient, 
+               double *areflect, double *dreflect, 
+               double *sreflect)
+{
+  if (x0 > x1){
+    //swap x0, x1, z0, z1, and i1 and i2 
+        int xt;
+        double z;
+        double * nt = (double *)malloc(sizeof(double));
+        xt = x0;
+        nt = n0;
+        z = z0;
+        x0 = x1;
+        n0 = n1;
+        z0 = z1;
+        x1 = xt;
+        n1 = nt;
+        z1 = z;
+    }
+    double dx = x1 - x0;
+    double dz = (z1 - z0) / dx; 
+    double dn[3];
+    for (int i = 0; i < 3; ++i)
+        dn[i] = (n1[i] - n0[i]) / (x1 - x0);
+//    printf("%f %f %f \n", dn[0], dn[1], dn[2]);
+    for (int i = x0; i < x1; ++i){
+        double z = z0 + dz * (i - x0); 
+        double * n = (double *)malloc(sizeof(double)); 
+        for (int i =0 ; i < 3; ++i)
+            n[i] = n0[i] + dn[i] * (i - x0);
+        color c = get_lighting(n, view, ambient, light, areflect, dreflect, sreflect);
+        plot( s, zb, c, i, y, z ); //i in this case is x val
+    }
+}
+
+void change_phong_deltas(int *flip, double distance[], double normals[3][3],int pos[], struct matrix **points, 
+                    double *dx1, double *dz1, double *dn1, double *x1, double
+                    *z1, double * n1 )
+{
+    *flip = 1;
+    *dx1 = distance[2] > 0 ? ((*points)->m[0][pos[2]]-(*points)->m[0][pos[1]])/distance[2] : 0;
+    *dz1 = distance[2] > 0 ? ((*points)->m[2][pos[2]]-(*points)->m[2][pos[1]])/distance[2] : 0;
+    for (int i = 0; i < 3; ++i)
+        dn1[i] = distance[2] > 0 ? ( normals[2][i] - normals[1][i] ) /
+            distance[2] : 0;
+    *x1 = ((*points))->m[0][pos[1]];
+    *z1 = ((*points))->m[2][pos[1]];
+    for (int i = 0; i < 3; ++i)
+        n1[i] = normals[1][i];
+}
+void draw_phong(struct matrix * points, screen s, zbuffer zb,
+		  double *view, double light[2][3], color ambient,
+		  double *areflect, double *dreflect, double *sreflect)
+{
+    //same start as gouraud, just find the normals from each vertex
+    struct vertex_normal *vn = NULL; 	
+	for (int point=0; point < points->lastcol; ++point) {
+		double pa[3] = {points->m[0][point], 
+		points->m[1][point], points->m[2][point]};
+	    int vertex = get_id(pa);	
+		struct vertex_normal *v;	
+		HASH_FIND_INT(vn, &vertex, v); 
+		if (v==NULL)
+			append(&vn, &points, point - point % 3, vertex);
+		else
+            modify(&v, &points, point - point % 3);
+	}
+    struct vertex_normal* v;
+    for (v=vn; v!=NULL; v=v->hh.next)
+        normalize(v->norm);
+
+     
+    //but it deviates here, because you don't calculate the intensities yet
+    //deviates w.r.t. the fact that you don't call set_intensities
+
+    for (int point = 0; point < points->lastcol-2; point+=3){
+		double *normal = calculate_normal(points, point);
+		if ( dot_product(normal, view) > 0 ) {
+			double y[3] = {points->m[1][point],points->m[1][point+1],points->m[1][point+2]};
+			int pos[3]; //pos[0] = bot, pos[1] = mid, pos[2] = top
+			find_positions(y, pos, point);
+            double x0, x1, z0, z1, dx0, dx1, dz0, dz1;
+		    x0 = points->m[0][pos[0]], x1 = points->m[0][pos[0]];
+            z0 = points->m[2][pos[0]], z1 = points->m[2][pos[0]];
+			int yindex = (int)(points->m[1][pos[0]]);
+			double distance[3] = {}; 
+            find_distances(distance, &points, pos);
+            double normals[3][3]; 
+            find_normals(&vn, &points, pos, point, normals);
+            double * n0 = normals[0];
+            double * n1 = normals[0];
+            double * dn0 = (double *)malloc(sizeof(double));
+            double * dn1 = (double *)malloc(sizeof(double));
+            find_phong_deltas(distance, &points, pos, normals, &dx0, &dx1, &dz0,
+                    &dz1, dn0, dn1);
+            int flip = 0;
+            while (yindex <= (int)points->m[1][pos[2]]){
+                draw_phong_lines(x0, yindex, z0, x1, z1, n0, n1, s, zb, view,
+                        light, ambient, areflect, dreflect, sreflect);  
+                x0+= dx0, x1+= dx1;
+                z0+= dz0, z1+= dz1;
+                for (int i = 0; i < 3; ++i){
+                    n0[i] += dn0[i];
+                    n1[i] += dn1[i];
+                    //printf("%f %f \n", dn0[i], dn1[i]); 
+                    
+                }
+                ++yindex; 
+                if ( !flip && yindex >= (int)(points->m[1][pos[1]]) ) { //if its flipped and past the middle
+                    change_phong_deltas(&flip, distance, normals, pos, &points,
+                            &dx1, &dz1, dn1, &x1, &z1, n1);
+                } 
+            }
+
+        }	
+    }
 }
 
 
