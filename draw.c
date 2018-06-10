@@ -488,6 +488,7 @@ void draw_phong_lines(int x0, int y, double z0,
         double * n = (double *)malloc(sizeof(double)); 
         for (int i =0 ; i < 3; ++i)
             n[i] = n0[i] + dn[i] * (i - x0);
+        normalize(n);
         color c = get_lighting(n, view, ambient, light, areflect, dreflect, sreflect);
         plot( s, zb, c, i, y, z ); //i in this case is x val
     }
@@ -525,9 +526,9 @@ void draw_phong(struct matrix * points, screen s, zbuffer zb,
 		else
             modify(&v, &points, point - point % 3);
 	}
-    struct vertex_normal* v;
+   /* struct vertex_normal* v;
     for (v=vn; v!=NULL; v=v->hh.next)
-        normalize(v->norm);
+        normalize(v->norm);*/
 
      
     //but it deviates here, because you don't calculate the intensities yet
@@ -562,8 +563,6 @@ void draw_phong(struct matrix * points, screen s, zbuffer zb,
                 for (int i = 0; i < 3; ++i){
                     n0[i] += dn0[i];
                     n1[i] += dn1[i];
-                    //printf("%f %f \n", dn0[i], dn1[i]); 
-                    
                 }
                 ++yindex; 
                 if ( !flip && yindex >= (int)(points->m[1][pos[1]]) ) { //if its flipped and past the middle
