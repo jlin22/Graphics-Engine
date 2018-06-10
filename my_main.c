@@ -351,8 +351,7 @@ void my_main() {
         //            areflect, dreflect, sreflect);
         //draw_gouraud(tmp, t, zb, view, light, ambient,
          //    areflect, dreflect, sreflect);
-        draw_phong(tmp, t, zb, view, light, ambient, areflect, dreflect,
-                sreflect);
+        draw_phong(tmp, t, zb, view, light, ambient, areflect, dreflect,sreflect);
         tmp->lastcol = 0;
         break;
       case TORUS:

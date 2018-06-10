@@ -25,6 +25,10 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
 		  double *view, double light[2][3], color ambient,
 		  double *areflect, double *dreflect, double *sreflect);
 //3d shapes
+void draw_phong(struct matrix * points, screen s, zbuffer zb,
+		  double *view, double light[2][3], color ambient,
+		  double *areflect, double *dreflect, double *sreflect);
+
 void add_box( struct matrix * edges,
               double x, double y, double z,
               double width, double height, double depth );

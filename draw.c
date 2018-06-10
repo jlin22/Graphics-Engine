@@ -408,7 +408,7 @@ void draw_gouraud(struct matrix * points, screen s, zbuffer zb,
             int flip = 0;
             while (yindex <= (int)points->m[1][pos[2]]){
                 draw_gouraud_lines(x0, yindex, z0, x1, z1, c0, c1, s, zb);  
-               x0+= dx0, x1+= dx1;
+                x0+= dx0, x1+= dx1;
                 z0+= dz0, z1+= dz1;
                 c0.red += (int)di0[0] , c1.red += (int)di1[0];
                 c0.green += (int)di0[1], c1.green += (int)di1[1];
@@ -433,7 +433,10 @@ void find_normals(struct vertex_normal **vn, struct matrix **points, int pos[],
         HASH_FIND_INT(*vn, &id, v); 
         for (int i = 0; i < 3; ++i)
             normals[p][i] = v->norm[i]; 
-        // printf("%d %d %d\n", v->c.red, v->c.blue, v->c.green);
+     //   normalize(normals[p]);
+        //printf("%f\n", pow(normals[p][0], 2)+ pow(normals[p][1],
+      //              2)+pow(normals[p][2], 2));
+        //printf("%f %f %f\n", normals[p][0],  normals[p][1], normals[p][2]);
    } 
 }
 void find_phong_deltas(double distance[], struct matrix **mat, int pos[], double
@@ -486,11 +489,16 @@ void draw_phong_lines(int x0, int y, double z0,
     for (int i = x0; i < x1; ++i){
         double z = z0 + dz * (i - x0); 
         double * n = (double *)malloc(sizeof(double)); 
-        for (int i =0 ; i < 3; ++i)
-            n[i] = n0[i] + dn[i] * (i - x0);
+        for (int j = 0 ; j < 3; ++j)
+            n[j] = n0[j] + dn[j] * (i - x0);
+     //   normalize(n);
+//        printf("%f %f %f\n", n[0], n[1], n[2]);
+        // !!!! IMPORTANT COLORS AREN'T CHANGING
         normalize(n);
         color c = get_lighting(n, view, ambient, light, areflect, dreflect, sreflect);
+     //   printf("%d %d %d\n", c.red, c.green, c.blue);
         plot( s, zb, c, i, y, z ); //i in this case is x val
+        free(n);
     }
 }
 
@@ -552,25 +560,28 @@ void draw_phong(struct matrix * points, screen s, zbuffer zb,
             double * n1 = normals[0];
             double * dn0 = (double *)malloc(sizeof(double));
             double * dn1 = (double *)malloc(sizeof(double));
-            find_phong_deltas(distance, &points, pos, normals, &dx0, &dx1, &dz0,
-                    &dz1, dn0, dn1);
+            find_phong_deltas(distance, &points, pos, normals, &dx0, &dx1, &dz0, &dz1, dn0, dn1);
+ //           printf("0 : %f %f %f\n", dn0[0], dn0[1], dn0[2]);
+//            printf("1 : %f %f %f\n", dn1[0], dn1[1], dn1[2]);
             int flip = 0;
             while (yindex <= (int)points->m[1][pos[2]]){
-                draw_phong_lines(x0, yindex, z0, x1, z1, n0, n1, s, zb, view,
-                        light, ambient, areflect, dreflect, sreflect);  
+                //maybe at the edges, the normals are not correct or something
+                draw_phong_lines(x0, yindex, z0, x1, z1, n0, n1, s, zb, view, light, ambient, areflect, dreflect, sreflect);  
                 x0+= dx0, x1+= dx1;
                 z0+= dz0, z1+= dz1;
                 for (int i = 0; i < 3; ++i){
                     n0[i] += dn0[i];
                     n1[i] += dn1[i];
                 }
+//                printf("%f %f %f\n", n0[1], n0[2], n0[0]);
                 ++yindex; 
                 if ( !flip && yindex >= (int)(points->m[1][pos[1]]) ) { //if its flipped and past the middle
                     change_phong_deltas(&flip, distance, normals, pos, &points,
                             &dx1, &dz1, dn1, &x1, &z1, n1);
                 } 
             }
-
+            free(dn0);
+            free(dn1);
         }	
     }
 }
