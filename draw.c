@@ -486,7 +486,7 @@ void draw_phong_lines(int x0, int y, double z0,
     for (int i = 0; i < 3; ++i)
         dn[i] = (n1[i] - n0[i]) / (x1 - x0);
 //    printf("%f %f %f \n", dn[0], dn[1], dn[2]);
-    for (int i = x0; i < x1; ++i){
+    for (int i = x0; i <= x1; ++i){
         double z = z0 + dz * (i - x0); 
         double * n = (double *)malloc(sizeof(double)); 
         for (int j = 0 ; j < 3; ++j)
