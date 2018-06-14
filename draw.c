@@ -438,7 +438,7 @@ void find_normals(struct vertex_normal **vn, struct matrix **points, int pos[],
 }
 void find_phong_deltas(double distance[], struct matrix **mat, int pos[], double
         normals[3][3], double *dx0, double *dx1, double *dz0, double *dz1, double
-        *dn0, double *dn1) 
+        **dn0, double **dn1) 
 {
   struct matrix *points = *mat;
   *dx0 = distance[0] > 0 ? (points->m[0][pos[2]]-points->m[0][pos[0]])/distance[0] : 0;
@@ -448,9 +448,9 @@ void find_phong_deltas(double distance[], struct matrix **mat, int pos[], double
  // for (int i = 0; i < 3 ; ++i)
 //      printf("%d : %d %d %d\n", i, intensity[i].red, intensity[i].green, intensity[i].blue);
   for (int i = 0; i < 3; ++i){
-      dn0[i] = distance[0] > 0 ? (normals[2][i] - normals[0][i]) / distance[0] :
+      (*dn0)[i] = distance[0] > 0 ? (normals[2][i] - normals[0][i]) / distance[0] :
           0;
-      dn1[i] = distance[1] > 0 ? (normals[1][i] - normals[0][i]) / distance[1] :
+      (*dn1)[i] = distance[1] > 0 ? (normals[1][i] - normals[0][i]) / distance[1] :
           0;
   }
 }
@@ -480,7 +480,8 @@ void draw_phong_lines(int x0, int y, double z0,
     double dx = x1 - x0;
     double dz = (z1 - z0) / dx; 
 
-    double dn[3];
+
+    double *dn = (double *)malloc(sizeof(double));
     for (int i = 0; i < 3; ++i)
         dn[i] = ((*n1)[i] - (*n0)[i]) / (x1 - x0);
     for (int i = x0; i < x1; ++i){
@@ -488,6 +489,7 @@ void draw_phong_lines(int x0, int y, double z0,
         double * n = (double *)malloc(sizeof(double)); 
         for (int j = 0 ; j < 3; ++j)
             n[j] = (*n0)[j] + dn[j] * (i - x0);
+        //normalize(n);
         //dn = 0! BIG ERROR FIX
         //i think its because the values passed are the same
         color c = get_lighting(n, view, ambient, light, areflect, dreflect, sreflect);
@@ -497,19 +499,19 @@ void draw_phong_lines(int x0, int y, double z0,
 }
 
 void change_phong_deltas(int *flip, double distance[], double normals[3][3],int pos[], struct matrix **points, 
-                    double *dx1, double *dz1, double *dn1, double *x1, double
-                    *z1, double * n1 )
+                    double *dx1, double *dz1, double **dn1, double *x1, double
+                    *z1, double ** n1 )
 {
     *flip = 1;
     *dx1 = distance[2] > 0 ? ((*points)->m[0][pos[2]]-(*points)->m[0][pos[1]])/distance[2] : 0;
     *dz1 = distance[2] > 0 ? ((*points)->m[2][pos[2]]-(*points)->m[2][pos[1]])/distance[2] : 0;
     for (int i = 0; i < 3; ++i)
-        dn1[i] = distance[2] > 0 ? ( normals[2][i] - normals[1][i] ) /
+        (*dn1)[i] = distance[2] > 0 ? ( normals[2][i] - normals[1][i] ) /
             distance[2] : 0;
     *x1 = ((*points))->m[0][pos[1]];
     *z1 = ((*points))->m[2][pos[1]];
     for (int i = 0; i < 3; ++i)
-        n1[i] = normals[1][i];
+        (*n1)[i] = normals[1][i];
 }
 void draw_phong(struct matrix * points, screen s, zbuffer zb,
 		  double *view, double light[2][3], color ambient,
@@ -554,7 +556,8 @@ void draw_phong(struct matrix * points, screen s, zbuffer zb,
             double * n1 = (double *)malloc(sizeof(double));
             double * dn1 = (double *)malloc(sizeof(double));
             double * dn0 = (double *)malloc(sizeof(double));
-            find_phong_deltas(distance, &points, pos, normals, &dx0, &dx1, &dz0, &dz1, dn0, dn1);
+            find_phong_deltas(distance, &points, pos, normals, &dx0, &dx1, &dz0,
+                    &dz1, &dn0, &dn1);
             // dn0 != dn1 confirmed!
             int flip = 0;
             while (yindex <= (int)points->m[1][pos[2]]){
@@ -562,14 +565,14 @@ void draw_phong(struct matrix * points, screen s, zbuffer zb,
                 x0+= dx0, x1+= dx1;
                 z0+= dz0, z1+= dz1;
                 for (int i = 0; i < 3; ++i){
+                    //normals are now different
                     n0[i] += dn0[i];
                     n1[i] += dn1[i];
-                    //BIG ISSUE n0 and n1 stay the same even though deltas are different?
                 }
                 ++yindex; 
                 if ( !flip && yindex >= (int)(points->m[1][pos[1]]) ) { //if its flipped and past the middle
                     change_phong_deltas(&flip, distance, normals, pos, &points,
-                            &dx1, &dz1, dn1, &x1, &z1, n1);
+                            &dx1, &dz1, &dn1, &x1, &z1, &n1);
                 } 
             }
             free(dn0);
