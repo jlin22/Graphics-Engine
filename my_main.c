@@ -88,13 +88,14 @@ void first_pass() {
 	case VARY:
 	  if (num_frames == 1)
 	    exit(1); 
+     if (num_frames == 1 && strcmp(name, "") == 0){
+         strcpy(name, "default");
+         printf("name has been set to 'default'");
+        }
+
 	}
     }
-  if (num_frames == 1 && strcmp(name, "") == 0){
-    strcpy(name, "default");
-    printf("name has been set to 'default'");
-  }
-}
+ }
 
 /*======== struct vary_node ** second_pass() ==========
   Inputs:
@@ -226,6 +227,8 @@ double get_value(struct vary_node* n, char* name)
 void my_main() {
   double c;
   //constant for value
+  int shading = 0;
+  //default flat
 
   int i;
   struct matrix *tmp;
@@ -301,6 +304,12 @@ void my_main() {
     switch (op[i].opcode)
 	{
 	case SHADING:
+        if (strcmp(op[i].op.shading.p->name, "flat") == 0)
+            shading = 0;
+        else if (strcmp(op[i].op.shading.p->name, "gouraud") == 0)
+            shading = 1;
+        else if (strcmp(op[i].op.shading.p->name, "phong") == 0)
+            shading = 2;
     	break;	
 	case AMBIENT:
     	ambient.red = op[i].op.ambient.c[0];
@@ -347,11 +356,14 @@ void my_main() {
                    op[i].op.sphere.d[2],
                    op[i].op.sphere.r, step_3d);
         matrix_mult( peek(systems), tmp );
-       // draw_polygons(tmp, t, zb, view, light, ambient,
-        //            areflect, dreflect, sreflect);
-        //draw_gouraud(tmp, t, zb, view, light, ambient,
-         //    areflect, dreflect, sreflect);
-        draw_phong(tmp, t, zb, view, light, ambient, areflect, dreflect,sreflect);
+        if (shading == 0) 
+            draw_polygons(tmp, t, zb, view, light, ambient,
+                  areflect, dreflect, sreflect);
+        else if (shading == 1)
+            draw_gouraud(tmp, t, zb, view, light, ambient,
+                  areflect, dreflect, sreflect);
+        else if (shading == 2)
+            draw_phong(tmp, t, zb, view, light, ambient, areflect, dreflect,sreflect);
         tmp->lastcol = 0;
         break;
       case TORUS:
@@ -373,6 +385,14 @@ void my_main() {
                   op[i].op.torus.d[2],
                   op[i].op.torus.r0,op[i].op.torus.r1, step_3d);
         matrix_mult( peek(systems), tmp );
+        if (shading == 0) 
+            draw_polygons(tmp, t, zb, view, light, ambient,
+                  areflect, dreflect, sreflect);
+        else if (shading == 1)
+            draw_gouraud(tmp, t, zb, view, light, ambient,
+                  areflect, dreflect, sreflect);
+        else if (shading == 2)
+            draw_phong(tmp, t, zb, view, light, ambient, areflect, dreflect,sreflect);
         draw_polygons(tmp, t, zb, view, light, ambient,
                       areflect, dreflect, sreflect);
         tmp->lastcol = 0;
@@ -397,8 +417,14 @@ void my_main() {
                 op[i].op.box.d1[0],op[i].op.box.d1[1],
                 op[i].op.box.d1[2]);
         matrix_mult( peek(systems), tmp );
-        draw_polygons(tmp, t, zb, view, light, ambient,
-                      areflect, dreflect, sreflect);
+        if (shading == 0) 
+            draw_polygons(tmp, t, zb, view, light, ambient,
+                  areflect, dreflect, sreflect);
+        else if (shading == 1)
+            draw_gouraud(tmp, t, zb, view, light, ambient,
+                  areflect, dreflect, sreflect);
+        else if (shading == 2)
+            draw_phong(tmp, t, zb, view, light, ambient, areflect, dreflect,sreflect);
         tmp->lastcol = 0;
         break;
       case LINE:

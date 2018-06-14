@@ -431,11 +431,12 @@ void find_normals(struct vertex_normal **vn, struct matrix **points, int pos[],
         int id = get_id(tmp);
         struct vertex_normal * v;
         HASH_FIND_INT(*vn, &id, v); 
+        //they are already normalized
         for (int i = 0; i < 3; ++i)
             normals[p][i] = v->norm[i]; 
      //   normalize(normals[p]);
         //printf("%f\n", pow(normals[p][0], 2)+ pow(normals[p][1],
-      //              2)+pow(normals[p][2], 2));
+         //          2)+pow(normals[p][2], 2));
         //printf("%f %f %f\n", normals[p][0],  normals[p][1], normals[p][2]);
    } 
 }
@@ -486,15 +487,15 @@ void draw_phong_lines(int x0, int y, double z0,
     for (int i = 0; i < 3; ++i)
         dn[i] = (n1[i] - n0[i]) / (x1 - x0);
 //    printf("%f %f %f \n", dn[0], dn[1], dn[2]);
-    for (int i = x0; i <= x1; ++i){
+    for (int i = x0; i < x1; ++i){
         double z = z0 + dz * (i - x0); 
         double * n = (double *)malloc(sizeof(double)); 
         for (int j = 0 ; j < 3; ++j)
             n[j] = n0[j] + dn[j] * (i - x0);
-     //   normalize(n);
-//        printf("%f %f %f\n", n[0], n[1], n[2]);
-        // !!!! IMPORTANT COLORS AREN'T CHANGING
-        normalize(n);
+        //dn = 0!
+
+       printf("%f %f %f\n", dn[0], dn[1], dn[2]);
+       //printf("%f %f %f\n", n[0], n[1], n[2]);
         color c = get_lighting(n, view, ambient, light, areflect, dreflect, sreflect);
      //   printf("%d %d %d\n", c.red, c.green, c.blue);
         plot( s, zb, c, i, y, z ); //i in this case is x val
@@ -534,11 +535,10 @@ void draw_phong(struct matrix * points, screen s, zbuffer zb,
 		else
             modify(&v, &points, point - point % 3);
 	}
-   /* struct vertex_normal* v;
+    struct vertex_normal* v;
     for (v=vn; v!=NULL; v=v->hh.next)
-        normalize(v->norm);*/
+        normalize(v->norm);
 
-     
     //but it deviates here, because you don't calculate the intensities yet
     //deviates w.r.t. the fact that you don't call set_intensities
 
@@ -561,11 +561,10 @@ void draw_phong(struct matrix * points, screen s, zbuffer zb,
             double * dn0 = (double *)malloc(sizeof(double));
             double * dn1 = (double *)malloc(sizeof(double));
             find_phong_deltas(distance, &points, pos, normals, &dx0, &dx1, &dz0, &dz1, dn0, dn1);
- //           printf("0 : %f %f %f\n", dn0[0], dn0[1], dn0[2]);
-//            printf("1 : %f %f %f\n", dn1[0], dn1[1], dn1[2]);
+//          printf("0 : %f %f %f\n", dn0[0], dn0[1], dn0[2]);
+//          printf("1 : %f %f %f\n", dn1[0], dn1[1], dn1[2]);
             int flip = 0;
             while (yindex <= (int)points->m[1][pos[2]]){
-                //maybe at the edges, the normals are not correct or something
                 draw_phong_lines(x0, yindex, z0, x1, z1, n0, n1, s, zb, view, light, ambient, areflect, dreflect, sreflect);  
                 x0+= dx0, x1+= dx1;
                 z0+= dz0, z1+= dz1;
