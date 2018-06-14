@@ -489,7 +489,7 @@ void draw_phong_lines(int x0, int y, double z0,
         double * n = (double *)malloc(sizeof(double)); 
         for (int j = 0 ; j < 3; ++j)
             n[j] = (*n0)[j] + dn[j] * (i - x0);
-        //normalize(n);
+        normalize(n);
         //dn = 0! BIG ERROR FIX
         //i think its because the values passed are the same
         color c = get_lighting(n, view, ambient, light, areflect, dreflect, sreflect);

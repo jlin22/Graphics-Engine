@@ -354,7 +354,7 @@ void my_main() {
         add_sphere(tmp, op[i].op.sphere.d[0],
                    op[i].op.sphere.d[1],
                    op[i].op.sphere.d[2],
-                   op[i].op.sphere.r, step_3d);
+                   op[i].op.sphere.r, 100);
         matrix_mult( peek(systems), tmp );
         if (shading == 0) 
             draw_polygons(tmp, t, zb, view, light, ambient,
