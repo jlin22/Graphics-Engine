@@ -483,18 +483,22 @@ void draw_phong_lines(int x0, int y, double z0,
     }
     double dx = x1 - x0;
     double dz = (z1 - z0) / dx; 
+
     double dn[3];
+  //  printf("1: %f %f %f\n", n1[0], n1[1], n1[2]);
+   // printf("0 :%f %f %f\n", n0[0], n0[1], n0[2]);
     for (int i = 0; i < 3; ++i)
         dn[i] = (n1[i] - n0[i]) / (x1 - x0);
+    //printf("%f %f %f\n", dn[0], dn[1], dn[2]);
+
 //    printf("%f %f %f \n", dn[0], dn[1], dn[2]);
     for (int i = x0; i < x1; ++i){
         double z = z0 + dz * (i - x0); 
         double * n = (double *)malloc(sizeof(double)); 
         for (int j = 0 ; j < 3; ++j)
             n[j] = n0[j] + dn[j] * (i - x0);
-        //dn = 0!
-
-       printf("%f %f %f\n", dn[0], dn[1], dn[2]);
+        //dn = 0! BIG ERROR FIX
+       //printf("%f %f %f\n", dn[0], dn[1], dn[2]);
        //printf("%f %f %f\n", n[0], n[1], n[2]);
         color c = get_lighting(n, view, ambient, light, areflect, dreflect, sreflect);
      //   printf("%d %d %d\n", c.red, c.green, c.blue);
@@ -561,8 +565,10 @@ void draw_phong(struct matrix * points, screen s, zbuffer zb,
             double * dn0 = (double *)malloc(sizeof(double));
             double * dn1 = (double *)malloc(sizeof(double));
             find_phong_deltas(distance, &points, pos, normals, &dx0, &dx1, &dz0, &dz1, dn0, dn1);
-//          printf("0 : %f %f %f\n", dn0[0], dn0[1], dn0[2]);
-//          printf("1 : %f %f %f\n", dn1[0], dn1[1], dn1[2]);
+
+                    //printf("%d\n", dn0[1] == dn1[1]);
+ //        printf("0 : %f %f %f\n", dn0[0], dn0[1], dn0[2]);
+//    printf("1 : %f %f %f\n", dn1[0], dn1[1], dn1[2]);
             int flip = 0;
             while (yindex <= (int)points->m[1][pos[2]]){
                 draw_phong_lines(x0, yindex, z0, x1, z1, n0, n1, s, zb, view, light, ambient, areflect, dreflect, sreflect);  
@@ -571,6 +577,10 @@ void draw_phong(struct matrix * points, screen s, zbuffer zb,
                 for (int i = 0; i < 3; ++i){
                     n0[i] += dn0[i];
                     n1[i] += dn1[i];
+                    //n0 and n1 stay the same even though deltas are different?
+                    //printf("%d\n", dn0[i] == dn1[i]);
+                    //printf("%d\n", n0[i] == n1[i]);
+                    //printf("%f %f\n", n0[i], n1[i]);
                 }
 //                printf("%f %f %f\n", n0[1], n0[2], n0[0]);
                 ++yindex; 
